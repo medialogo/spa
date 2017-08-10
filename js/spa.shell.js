@@ -1,6 +1,6 @@
 /*
  * spa.shell.js
- * SPA‚ÌƒVƒFƒ‹ƒ‚ƒWƒ…[ƒ‹
+ * SPAï¿½ÌƒVï¿½Fï¿½ï¿½ï¿½ï¿½ï¿½Wï¿½ï¿½ï¿½[ï¿½ï¿½
 */
 
 /*jslint  browser : true, continue : true,
@@ -13,7 +13,7 @@
 /*global $, spa */
 
 spa.shell =(function () {
-  //-------- ƒ‚ƒWƒ…[ƒ‹ƒXƒR[ƒv•Ï”ŠJn ------------
+  //-------- ãƒ¢ã‚¸ãƒ¥ãƒ¼ãƒ«ã‚¹ã‚³ãƒ¼ãƒ—å¤‰æ•°é–‹å§‹ ------------
   var configMap = {
     main_html : String()
 	  + '<div class="spa-shell-head">'
@@ -27,34 +27,91 @@ spa.shell =(function () {
 	  + '</div>'
 	  + '<div class="spa-shell-foot">foot</div>'
 	  + '<div class="spa-shell-chat">chat</div>'
-	  + '<div class="spa-shell-modal">modal</div>'
+	  + '<div class="spa-shell-modal">modal</div>',
+    chat_extend_time	:1000,
+    chat_retract_time	:300,
+    chat_extend_height	:450,
+    chat_retract_height	:15
   },
   stateMap = { $container : null },
   jqueryMap = {},
   
-  setJqueryMap, initModule;
-  //-------- ƒ‚ƒWƒ…[ƒ‹ƒXƒR[ƒv•Ï”I—¹ ------------
-  //-------- ƒ†[ƒeƒBƒŠƒeƒBƒƒ\ƒbƒhŠJn ------------
-  //-------- ƒ†[ƒeƒBƒŠƒeƒBƒƒ\ƒbƒhI—¹ ------------
-  //-------- DOMƒƒ\ƒbƒhŠJn ------------
-  //DOMƒƒ\ƒbƒh/setJqueryMap/ŠJn ------------
+  setJqueryMap, toggleChat, initModule;
+  //-------- ãƒ¢ã‚¸ãƒ¥ãƒ¼ãƒ«ã‚¹ã‚³ãƒ¼ãƒ—å¤‰æ•°çµ‚äº† ------------
+  //-------- ãƒ¦ãƒ¼ãƒ†ã‚£ãƒªãƒ†ã‚£ãƒ¡ã‚½ãƒƒãƒ‰é–‹å§‹ ------------
+  //-------- ãƒ¦ãƒ¼ãƒ†ã‚£ãƒªãƒ†ã‚£ãƒ¡ã‚½ãƒƒãƒ‰çµ‚äº† ------------
+  //-------- DOMãƒ¡ã‚½ãƒƒãƒ‰é–‹å§‹ ------------
+  //DOMãƒ¡ã‚½ãƒƒãƒ‰/setJqueryMap/é–‹å§‹ ------------
   setJqueryMap = function () {
 	var $container = stateMap.$container;
-	jqueryMap = { $container : $container };
+	
+	jqueryMap = { $container : $container,
+	$chat : $container.find( '.spa-shell-chat')
+	};
   };
-  //DOMƒƒ\ƒbƒh/setJqueryMap/I—¹ ------------
-  //-------- DOMƒƒ\ƒbƒhI—¹ ------------
+  //DOMãƒ¡ã‚½ãƒƒãƒ‰/setJqueryMap/çµ‚äº† ------------
 
-  //-------- ƒCƒxƒ“ƒgƒnƒ“ƒhƒ‰ŠJn ------------
-  //-------- ƒCƒxƒ“ƒgƒnƒ“ƒhƒ‰I—¹ ------------
-  //-------- ƒpƒuƒŠƒbƒNƒƒ\ƒbƒhŠJn ------------
-  //ƒpƒuƒŠƒbƒNƒƒ\ƒbƒh/initModule/ŠJn ------------
+  //DOMãƒ¡ã‚½ãƒƒãƒ‰/toggleChat/é–‹å§‹ ------------
+  //ç›®çš„ï¼šãƒãƒ£ãƒƒãƒˆã‚¹ãƒ©ã‚¤ãƒ€ãƒ¼ã®æ‹¡å¤§ãŠã‚ˆã³æ ¼ç´
+  //å¼•æ•°ï¼š
+  //  = do_extend - ã‚¹ãƒ©ã‚¤ãƒ€ãƒ¼ã‚’æ‹¡å¤§(true)ã¾ãŸã¯æ ¼ç´(false)
+  //  = callback -ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ã®æœ€å¾Œã«å®Ÿè¡Œã™ã‚‹é–¢æ•°ï¼ˆã‚ªãƒ—ã‚·ãƒ§ãƒ³ï¼‰
+  toggleChat= function () {
+	var 
+	  px_chat_ht =jqueryMap.$chat.height(),
+	  is_open = px_chat_ht === configMap.chat_extend_height,
+	  is_closed = px_chat_ht === configMap.chat_retract_height,
+	  is_sliding =!is_open && !is_closed;
+	
+	// ç«¶åˆçŠ¶æ…‹ã‚’é¿ã‘ã‚‹
+	if (is_sliding) {return false;}
+	
+	//ã‚¹ãƒ©ã‚¤ãƒ€ãƒ¼ã®æ‹¡å¤§
+	if (do_extend) {
+		jqueryMap.$chat.animate(
+		  { height: configMap.chat_extend_height},
+		  configMap.chat_extend_time,
+		  function() {
+		    if ( callback ){ callback(jequeryMap.$chat); }
+		  }
+	    );
+	} 	
+	// â†‘ã‚¹ãƒ©ã‚¤ãƒ€ãƒ¼ã®æ‹¡å¤§
+
+	//ã‚¹ãƒ©ã‚¤ãƒ€ãƒ¼ã®æ ¼ç´
+	jqueryMap.$chat.animate(
+	  { height: configMap.chat_retract_height},
+	  configMap.chat_retract_time,
+	  function() {
+		if ( callback ){ callback(jequeryMap.$chat); }
+	  }
+    );
+	return true;
+	// â†‘ã‚¹ãƒ©ã‚¤ãƒ€ãƒ¼ã®æ ¼ç´
+	
+	
+	jqueryMap = { $container : $container,
+	$chat : $container.find( '.spa-shell-chat')
+	};
+  };
+  //DOMãƒ¡ã‚½ãƒƒãƒ‰/setJqueryMap/çµ‚äº† ------------
+//-------- DOMãƒ¡ã‚½ãƒƒãƒ‰çµ‚äº† ------------
+
+  //-------- ã‚¤ãƒ™ãƒ³ãƒˆãƒãƒ³ãƒ‰ãƒ©é–‹å§‹ ------------
+  //-------- ã‚¤ãƒ™ãƒ³ãƒˆãƒãƒ³ãƒ‰ãƒ©çµ‚äº† ------------
+  //-------- ãƒ‘ãƒ–ãƒªãƒƒã‚¯ãƒ¡ã‚½ãƒƒãƒ‰é–‹å§‹ ------------
+  //ãƒ‘ãƒ–ãƒªãƒƒã‚¯ãƒ¡ã‚½ãƒƒãƒ‰/initModule/é–‹å§‹ ------------
   initModule = function ( $container) {
+	// HTMLã‚’ãƒ­ãƒ¼ãƒ‰ã—ã€jQueryã‚³ãƒ¬ã‚¯ã‚·ãƒ§ãƒ³ã‚’ãƒãƒƒãƒ”ãƒ³ã‚°ã™ã‚‹  
 	stateMap.$container = $container;
 	$container.html( configMap.main_html );
 	setJqueryMap();
+	
+	//åˆ‡ã‚Šæ›¿ãˆã‚’ãƒ†ã‚¹ãƒˆã™ã‚‹
+	setTimeout( function() { toggleChat(true);}, 3000);
+	setTimeout( function() { toggleChat(false);}, 8000);
   };
-  //ƒpƒuƒŠƒbƒNƒƒ\ƒbƒh/initModule/I—¹ ------------
+  //ãƒ‘ãƒ–ãƒªãƒƒã‚¯ãƒ¡ã‚½ãƒƒãƒ‰/initModule/çµ‚äº† ------------
   return { initModule : initModule};
-  //-------- ƒpƒuƒŠƒbƒNƒƒ\ƒbƒhI—¹ ------------
+  //-------- ãƒ‘ãƒ–ãƒªãƒƒã‚¯ãƒ¡ã‚½ãƒƒãƒ‰çµ‚äº† ------------
 }());

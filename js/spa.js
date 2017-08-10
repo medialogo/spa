@@ -1,6 +1,6 @@
 /*
  * spa.js
- * ルート名前空間モジュール
+ * 繝ｫ繝ｼ繝亥錐蜑咲ｩｺ髢薙Δ繧ｸ繝･繝ｼ繝ｫ
 */
 
 /*jslint  browser : true, continue : true,
