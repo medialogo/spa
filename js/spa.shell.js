@@ -1,6 +1,6 @@
 /*
  * spa.shell.js
- * SPA�̃V�F�����W���[��
+ * SPAのシェルモジュール
 */
 
 /*jslint  browser : true, continue : true,
@@ -56,7 +56,7 @@ spa.shell =(function () {
   //引数：
   //  = do_extend - スライダーを拡大(true)または格納(false)
   //  = callback -アニメーショの最後に実行する関数（オプション）
-  toggleChat= function () {
+  toggleChat= function (do_extend, callback) {
 	var 
 	  px_chat_ht =jqueryMap.$chat.height(),
 	  is_open = px_chat_ht === configMap.chat_extend_height,
@@ -72,9 +72,10 @@ spa.shell =(function () {
 		  { height: configMap.chat_extend_height},
 		  configMap.chat_extend_time,
 		  function() {
-		    if ( callback ){ callback(jequeryMap.$chat); }
+		    if ( callback ){ callback(jqueryMap.$chat); }
 		  }
 	    );
+		return true;
 	} 	
 	// ↑スライダーの拡大
 
@@ -83,18 +84,13 @@ spa.shell =(function () {
 	  { height: configMap.chat_retract_height},
 	  configMap.chat_retract_time,
 	  function() {
-		if ( callback ){ callback(jequeryMap.$chat); }
+		if ( callback ){ callback(jqueryMap.$chat); }
 	  }
     );
 	return true;
-	// ↑スライダーの格納
-	
-	
-	jqueryMap = { $container : $container,
-	$chat : $container.find( '.spa-shell-chat')
-	};
+  // ↑スライダーの格納
   };
-  //DOMメソッド/setJqueryMap/終了 ------------
+  //DOMメソッド/toggleChat/終了 ------------
 //-------- DOMメソッド終了 ------------
 
   //-------- イベントハンドラ開始 ------------
