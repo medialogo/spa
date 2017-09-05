@@ -15,6 +15,9 @@
 spa.shell =(function () {
   //-------- モジュールスコープ変数開始 ------------
   var configMap = {
+    anchor_schema_map : {
+      chat : { open : true, closed : true}
+    },
     main_html : String()
 	  + '<div class="spa-shell-head">'
 	    + '<div class="spa-shell-head-logo">logo</div>'
@@ -37,15 +40,26 @@ spa.shell =(function () {
   },
   stateMap = { 
 	$container : null,
+	anchor_map  : {},
 	is_chat_retracted : true
   },
   jqueryMap = {},
   
-  setJqueryMap, toggleChat, onClickChat, initModule;
+  copyAnchorMap, setJqueryMap, toggleChat, 
+  changeAnchorPart, onHasChange,
+  onClickChat, initModule;
   //-------- モジュールスコープ変数終了 ------------
   //-------- ユーティリティメソッド開始 ------------
+  // return the copy of stored anchorMap, the overhead 
+  copyAnchorMap = function () {
+	return $.extend(true, {}, stateMap.anchor_map);  
+  }
   //-------- ユーティリティメソッド終了 ------------
   //-------- DOMメソッド開始 ------------
+  //DOMメソッド/changeAnchorPart/開始 ------------
+  
+  //DOMメソッド/changeAnchorPart/終了 ------------
+  
   //DOMメソッド/setJqueryMap/開始 ------------
   setJqueryMap = function () {
 	var $container = stateMap.$container;
@@ -112,7 +126,11 @@ spa.shell =(function () {
 
   //-------- イベントハンドラ開始 ------------
   onClickChat = function (event) {
-	toggleChat(stateMap.is_chat_retracted);
+	if (toggleChat(stateMap.is_chat_retracted)) {
+	  $.uriAnchor.setAnchor({
+		  chat : (stateMap.is_chat_retracted ? 'open' : 'closed')
+	  });
+	}
 	return false;
   };
   //-------- イベントハンドラ終了 ------------
