@@ -46,14 +46,15 @@ spa.shell =(function () {
   jqueryMap = {},
 
   copyAnchorMap, setJqueryMap, toggleChat,
-  changeAnchorPart, onHasChange,
+  onHashchange,
+  changeAnchorPart,
   onClickChat, initModule;
   //-------- モジュールスコープ変数終了 ------------
   //-------- ユーティリティメソッド開始 ------------
   // return the copy of stored anchorMap, the overhead
   copyAnchorMap = function () {
     return $.extend(true, {}, stateMap.anchor_map);
-  }
+  };
   //-------- ユーティリティメソッド終了 ------------
   //-------- DOMメソッド開始 ------------
   //DOMメソッド/changeAnchorPart/開始 ------------
@@ -184,15 +185,69 @@ spa.shell =(function () {
 //-------- DOMメソッド終了 ------------
 
   //-------- イベントハンドラ開始 ------------
-  onClickChat = function (event) {
-    if (toggleChat(stateMap.is_chat_retracted)) {
-      $.uriAnchor.setAnchor({
-          chat : (stateMap.is_chat_retracted ? 'open' : 'closed')
-      });
+  // イベントハンドラ/onHashchange/開始
+  // 目的: hashchangeイベントを処理する
+  // 引数:
+  //   * event - jQuery イベントオブジェクト
+  // 設定 :なし
+  // 戻り値 :false
+  // 動作 :
+  //   * URIアンカー要素を解析する。
+  //   * 提示されたアプリケーション状態と現在の状態を比較する。
+  //   * 提示された状態が既存の状態と異なる場合のみ、アプリケーションを調整する
+  //
+
+  onHashchange = function ( event ) {
+    var
+      anchor_map_previous = copyAnchorMap(),
+      anchor_map_proposed,
+      _s_chat_previous, _s_chat_proposed,
+      s_chat_proposed;
+
+    // アンカーの解析を試みる
+    try { anchor_map_proposed = $.uriAnchor.makeAnchorMap(); }
+    catch (error) {
+        $.uriAnchor.setAnchor( anchor_map_previous, null, true);
+        return false;
     }
+    stateMap.anchor_map = anchor_map_proposed;
+
+    // 便利な変数
+    _s_chat_previous = anchor_map_previous._s_chat;
+    _s_chat_proposed = anchor_map_proposed._s_chat;
+
+    // 変更されている場合のチャットコンポーネントの調整開始
+    if ( ! anchor_map_previous || _s_chat_previous !== _s_chat_proposed) {
+        s_chat_proposed = anchor_map_proposed.chat;
+        switch ( s_chat_proposed) {
+        case 'open' :
+            toggleChat(true);
+        break;
+        case 'closed' :
+            toggleChat(false);
+        break;
+        default :
+            toggleChat(false);
+            delete anchor_map_proposed.chat;
+            $.uriAnchor.setAnchor( anchor_map_proposed, null, true);
+        }
+    }
+    // 変更されている場合のチャットコンポーネントの調整終了
     return false;
   };
+  // イベントハンドラ/onHashchange/終了
+
+  // イベントハンドラ/onClickChat/開始
+  onClickChat = function (event) {
+    changeAnchorPart({
+      chat: ( stateMap.is_chat_retracted? 'open' : 'closed')
+    });
+
+    return false;
+  };
+  // イベントハンドラ/onClickChat/終了
   //-------- イベントハンドラ終了 ------------
+
   //-------- パブリックメソッド開始 ------------
   //パブリックメソッド/initModule/開始 ------------
   initModule = function ( $container) {
@@ -206,6 +261,20 @@ spa.shell =(function () {
     jqueryMap.$chat
       .attr('title', configMap.chat_retracted_title)
       .click( onClickChat);
+
+    // 我々のスキーマを使うようにuriAnchorを設定する
+    $.uriAnchor.configModule({
+      schema_map : configMap.anchor_schema_map
+    });
+
+    // URIアンカー変更イベントを処理する。
+    // これはすべての機能モジュールを設定して初期化した後に行う
+    // そうしないと、トリガーイベントを処理できる状態になっていない。
+    // トリガーイベントはアンカーがロード状態とみなせることを保証するために使う。
+    //
+    $(window)
+      .bind( 'hashchange', onHashchange)
+      .trigger( 'hashchange');
 
     //切り替えをテストする
     //setTimeout( function() { toggleChat(true);}, 3000);
