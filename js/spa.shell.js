@@ -46,8 +46,7 @@ spa.shell =(function () {
   jqueryMap = {},
 
   copyAnchorMap, setJqueryMap, toggleChat,
-  onHashchange,
-  changeAnchorPart,
+  changeAnchorPart, onHashchange,
   onClickChat, initModule;
   //-------- モジュールスコープ変数終了 ------------
   //-------- ユーティリティメソッド開始 ------------
@@ -141,12 +140,12 @@ spa.shell =(function () {
     var
       anchor_map_revise = copyAnchorMap(),
       bool_return = true;
-    key_name, key_name_dep;
+      key_name, key_name_dep;
 
     // アンカーマップへ変更を統合（開始）
     KEYVAL:
     for ( key_name in arg_map ) {
-      if ( arg_map.hasOwrProperty(key_name)) {
+      if ( arg_map.hasOwnProperty(key_name)) {
         // 反復中に従属キーをとばす
         if (key_name.indexOf('_') === 0) { continue KEYVAL;}
 
@@ -172,7 +171,7 @@ spa.shell =(function () {
     }
     catch ( error ) {
       //URIを既存の状態に置き換える
-      $.uriAnchor.setAnchor( stateMap.ahcnor_map, null, true);
+      $.uriAnchor.setAnchor( stateMap.anchor_map, null, true);
       bool_return = false;
     }
     // URIの更新完了
