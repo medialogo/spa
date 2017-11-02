@@ -139,7 +139,7 @@ spa.shell =(function () {
     //   * 成功時にはtrue、失敗時にはfalseを返す
     var
       anchor_map_revise = copyAnchorMap(),
-      bool_return = true;
+      bool_return = true,
       key_name, key_name_dep;
 
     // アンカーマップへ変更を統合（開始）
@@ -257,14 +257,16 @@ spa.shell =(function () {
 
     //チャットスライダーを初期化し、クリックハンドラをバインドする
     stateMap.is_chat_retracted = true;
-    jqueryMap.$chat
-      .attr('title', configMap.chat_retracted_title)
-      .click( onClickChat);
+    jqueryMap.$chat.attr('title', configMap.chat_retracted_title).click( onClickChat);
 
     // 我々のスキーマを使うようにuriAnchorを設定する
     $.uriAnchor.configModule({
       schema_map : configMap.anchor_schema_map
     });
+
+    // 機能モジュールを構成して初期化する
+    spa.chat.configModule( {} );
+    spa.chat.initModule( jqueryMap.$chat );
 
     // URIアンカー変更イベントを処理する。
     // これはすべての機能モジュールを設定して初期化した後に行う

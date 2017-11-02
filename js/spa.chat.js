@@ -12,7 +12,7 @@
 
 /*global $, spa */
 
-spa.module = (function () {
+spa.chat = (function () {
 
   //---------------- モジュールスコープ変数↓ --------------
   var
