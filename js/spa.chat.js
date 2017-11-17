@@ -60,7 +60,7 @@ spa.chat = (function () {
       set_chat_anchor : null
     },
     stateMap  = { 
-	  $append_target : null 
+	  $append_target : null, 
 	  position_type  : 'closed',
 	  px_per_em		 : 0,
 	  slider_hidden_px : 0,
@@ -103,7 +103,7 @@ spa.chat = (function () {
   // DOM メソッド /setJqueryMap/ ↑
   
   // DOM メソッド /setPxSize/↓
-  setPxSize - function () {
+  setPxSizes = function () {
 	var px_per_em, opened_height_em;
 	px_per_em = getEmSize ( jqueryMap.$slider.get(0) );
 	
@@ -113,21 +113,96 @@ spa.chat = (function () {
 	stateMap.slider_closed_px = configMap.slider_closed_em * px_per_em;
 	stateMap.slider_opened_px = opened_height_em * px_per_em;
 	jqueryMap.$sizer.css({
-	  height ; ( opened_height_em - 2 ) * px_per_em
+	  height : ( opened_height_em - 2 ) * px_per_em
 	})
   };
   // DOM メソッド /setPxSize/↑
   
+  // パブリックDOMメソッド /setSliderPosition/ ↓
+  //
+  // 用例 : spa.chat.setSliderPosition( 'closed' );
+  // 目的 : チャットスライダーが要求された状態になるようにする
+  // 引数 :
+  //  * position_type - enum('closed', 'opened', または 'hidden')
+  //  * callback - アニメーションの最後のオプションのコールバック
+  //    (コールバックは引数としてスライダーDOM要素を受け取る)
+  // 動作 :
+  //   スライダーが要求に合致している場合は現在の状態のままにする。
+  //   それ以外の場合はアニメーションを使って要求された状態にする。
+  // 戻り値 :
+  //   * true - 要求された状態を実現した
+  //   * false - 要求された状態を実現していない
+  // 例外発行 : なし
+  //
+  setSliderPosition = function (position_type, callback ){
+	var
+	  height_px, animate_time, slider_title, toggle_text;
+	
+	// スライダーがすでに要求された一にある場合は true を返す
+	if ( stateMap.position_type == position_type ) {
+	  return true;
+	}
+	
+	// アニメーションパラメータを用意する
+	switch ( position_type ) {
+	  case 'opened' :
+		height_px = stateMap.slider_opened_px;
+		animate_time = configMap.slider_open_time;
+		slider_title = configMap.slider_opened_title;
+		toggle_text = '=';
+	  break;
+	  
+	  case 'hidden' :
+		height_px = 0;
+		animate_time = configMap.slider_open_time;
+		slider_title = '';
+		toggle_text = '+';
+	  break;
+	  
+	  case 'closed' :
+		height_px = stateMap.slider_closed_px;
+		animate_time = configMap.slider_close_time;
+		slider_title = configMap.slider_closed_title;
+		toggle_text = '+';
+	  break;
+	  // 未知の position_type に対処する
+	  default : return false;
+	}
+	
+	// スライダー位置をアニメーションで変更する
+	stateMap.position_type = '';
+	jqueryMap.$slider.animate(
+	  { height : height_px },
+	  animate_time,
+	  function () {
+		jqueryMap.$toggle.prop( 'title', slider_title );
+		jqueryMap.$toggle.text( toggle_text );
+		stateMap.position_type = position_type;
+		if ( callback ) { callback (jqueryMap.$slider); }
+      }
+    );
+	return true;	
+  };
+  // パブリックDOMメソッド /setSliderPosition/ ↑
   //---------------------- DOMメソッド↑ ---------------------
 
   //------------------- イベントハンドラ↓ -------------------
-  // example: onClickButton = ...
+  //
+  onClickToggle = function ( event ) {
+	var set_chat_anchor = configMap.set_chat_anchor;
+	if ( stateMap.position_type === 'opened' ){
+	  set_chat_anchor( 'closed' );
+	}
+	else if ( stateMap.position_type === 'closed' ){
+	  set_chat_anchor( 'opened' );
+	}
+	return false;
+  }
   //-------------------- イベントハンドラ↑ --------------------
 
 
-
   //------------------- パブリックメソッド↓ -------------------
-  // パブリックメソッド /configModule/↓
+ // パブリックメソッド /configModule/↓
   // 用例 : spa.chat.configModule({ slider_open_em : 18 })
   // 目的 : 初期化前にモジュールを構成する
   // 引数 :
@@ -146,7 +221,7 @@ spa.chat = (function () {
   //   その他の動作は行わない。
   // 戻り値   : true
   // 例外発行  : 受け入れられない引数や、欠如した引数の場合
-  //          JavaScriptエラーオブジェクトとスタックトレース
+  //          JavaScriptエラーオブジェクトとスタックトレースを投げる
 
   configModule = function ( input_map ) {
     spa.util.setConfigMap({
@@ -159,40 +234,35 @@ spa.chat = (function () {
   // パブリックメソッド /configModule/ ↑
 
   // パブリックメソッド /initModule/ ↓
-  // 目的    : モジュールを初期化する
+  // 用例 : spa.chat.initModule ( $('#div_id') );
+  // 目的    : ユーザーに機能を提供するようにチャットに指示する
   // 引数  :
-  //  * $container この機能で使用する jQuery 要素
-  // 戻り値    : true
+  //  * $append_target (例: $('#div_id') );
+  //  1つのDOMコンテナを表すjQueryコレクション
+  // 動作 :
+  //  指定されたコンテナにチャットスライダーを付加し、HTMLコンテンツで埋める
+  //  そして、要素、イベント、ハンドラを初期化し、ユーザーにチャットルームインターフェイスを提供する。
+  // 戻り値    : 成功時 true, 失敗時 false 
   // 例外発行     : なし
   //
-  initModule = function ( $container ) {
-    $container.html( configMap.main_html);
-    stateMap.$container = $container;
+  initModule = function ( $append_target ) {
+	$append_target.append( configMap.main_html );
+    stateMap.$append_target = $append_target;
     setJqueryMap();
+    setPxSizes();
+    
+    // チャットスライダーをデフォルトのタイトルと状態で初期化する
+    jqueryMap.$toggle.prop( 'title', configMap.slider_closed_title );
+    jqueryMap.$head.click( onClickToggle );
+    stateMap.position_type = 'closed';
+    
     return true;
   };
   // パブリックメソッド /initModule/ ↑
 
-  // パブリックメソッド /setSliderPosition/ ↓
-  //
-  // 用例 : spa.chat.setSliderPosition( 'closed' );
-  // 目的 : チャットスライダーが要求された状態になるようにする
-  // 引数 :
-  //  * position_type - enum('closed', 'opened', または 'hidden')
-  //  * callback - アニメーションの最後のオプションのコールバック
-  //    (コールバックは引数としてスライダーDOM要素を受け取る)
-  // 動作 :
-  //   スライダーが要求に合致している場合は現在の状態のままにする。
-  //   それ以外の場合はアニメーションを使って要求された状態にする。
-  // 戻り値 :
-  //   * true - 要求された状態を実現した
-  //   * false - 要求された状態を実現していない
-  // 例外発行 : なし
-  //
-  // パブリックメソッド /setSliderPosition/ ↑
-
   // パブリックメソッドを返す
   return {
+	setSliderPosition : setSliderPosition,
     configModule : configModule,
     initModule   : initModule
   };
