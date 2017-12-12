@@ -87,7 +87,7 @@ spa.chat = (function () {
   // DOM メソッド /setJqueryMap/↓
   setJqueryMap = function () {
     var 
-      $append_target = stateMap.$append_target;
+      $append_target = stateMap.$append_target,
       $slider = $append_target.find( '.spa-chat');
 
     jqueryMap = { 
@@ -98,7 +98,7 @@ spa.chat = (function () {
       $sizer	: $slider.find('.spa-chat-sizer'),
       $msgs		: $slider.find('.spa-chat-msgs'),
       $box		: $slider.find('.spa-chat-box'),
-      $input 	: $slider.find('.spa-chat-input input[type=tex]') };
+      $input 	: $slider.find('.spa-chat-input input[type=text]') };
   };
   // DOM メソッド /setJqueryMap/ ↑
   
@@ -207,7 +207,7 @@ spa.chat = (function () {
   // 目的 : 初期化前にモジュールを構成する
   // 引数 :
   //   * set_chat_anchor - オープンまたはクローズ状態を示すように
-  //     URIアンカーを変更するコールバック。このコールバックrは要求された状態を
+  //     URIアンカーを変更するコールバック。このコールバックは要求された状態を
   //     満たせない場合にはfalseを返さなければならない
   //   * chat_model - インスタントメッセージングと
   //     やり取りするメソッドを提供するチャットモデルオブジェクト。
