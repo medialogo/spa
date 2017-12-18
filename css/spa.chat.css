@@ -45,7 +45,7 @@
 }
 
 .spa-chat-closer:hover {
-  background : #800;	
+  background : #800;
 }
 
 .spa-chat-head-toggle {
@@ -54,7 +54,7 @@
   left : 0;
   width :2em;
   bottom : 0;
-  border-radiou : 0.3em 0 0 0;
+  border-radious : 0.3em 0 0 0;
 }
 
 .spa-chat-head-title {

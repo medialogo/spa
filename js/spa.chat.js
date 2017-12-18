@@ -27,14 +27,14 @@ spa.chat = (function () {
           + '</div>'
           + '<div class="spa-chat-closer">x</div>'
           + '<div class="spa-chat-sizer">'
-          + '<div class="spa-chat-msgs"></div>'
-          + '<div class="spa-chat-box">'
-          + '<input type="text">'
-          + '<div>送信</div>'
-         + '</div>'
+            + '<div class="spa-chat-msgs"></div>'
+            + '<div class="spa-chat-box">'
+            + '<input type="text"/>'
+            + '<div>送信</div>'
+          + '</div>'
         + '</div>'
       + '</div>',
-      
+
       settable_map : {
         slider_open_time : true,
         slider_close_time : true,
@@ -42,37 +42,39 @@ spa.chat = (function () {
         slider_closed_em : true,
         slider_opened_title : true,
         slider_closed_title : true,
-        
+
         chat_model	: true,
         people_model : true,
         set_chat_anchor : true
       },
-      
+
       slider_open_time 	: 250,
       slider_close_time : 250,
-      slider_opened_em	: 16,
+      slider_opened_em	: 18,
       slider_closed_em	: 2,
       slider_opened_title : 'クリックして閉じる',
       slider_closed_title : 'クリックして開く',
-      
+      slider_opened_min_em : 10,
+      slider_height_min_em : 20,
+
       chat_model	: null,
       people_model	: null,
       set_chat_anchor : null
     },
-    stateMap  = { 
-	  $append_target : null, 
-	  position_type  : 'closed',
-	  px_per_em		 : 0,
-	  slider_hidden_px : 0,
-	  slider_closed_px : 0,
-	  slider_opened_px : 0
+    stateMap  = {
+      $append_target : null,
+      position_type  : 'closed',
+      px_per_em		 : 0,
+      slider_hidden_px : 0,
+      slider_closed_px : 0,
+      slider_opened_px : 0
     },
     jqueryMap = {},
 
     setJqueryMap, getEmSize, setPxSizes, setSliderPosition,
     onClickToggle, configModule, initModule,
     removeSlider, handleResize;
-  
+
   //----------------- モジュールスコープ変数↑ ---------------
 
   //------------------- ユーティリティメソッド↓ ------------------
@@ -87,11 +89,11 @@ spa.chat = (function () {
   //--------------------- DOMメソッド↓ --------------------
   // DOM メソッド /setJqueryMap/↓
   setJqueryMap = function () {
-    var 
+    var
       $append_target = stateMap.$append_target,
       $slider = $append_target.find( '.spa-chat');
 
-    jqueryMap = { 
+    jqueryMap = {
       $slider   : $slider,
       $head		: $slider.find('.spa-chat-head'),
       $toggle	: $slider.find('.spa-chat-head-toggle'),
@@ -102,23 +104,29 @@ spa.chat = (function () {
       $input 	: $slider.find('.spa-chat-input input[type=text]') };
   };
   // DOM メソッド /setJqueryMap/ ↑
-  
+
   // DOM メソッド /setPxSize/↓
   setPxSizes = function () {
-	var px_per_em, opened_height_em;
-	px_per_em = getEmSize ( jqueryMap.$slider.get(0) );
-	
-	opened_height_em = configMap.slider_opened_em;
-	
-	stateMap.px_per_em = px_per_em;
-	stateMap.slider_closed_px = configMap.slider_closed_em * px_per_em;
-	stateMap.slider_opened_px = opened_height_em * px_per_em;
-	jqueryMap.$sizer.css({
-	  height : ( opened_height_em - 2 ) * px_per_em
-	})
+    var px_per_em, window_height_em, opened_height_em;
+    px_per_em = getEmSize ( jqueryMap.$slider.get(0) );
+    window_height_em = Math.floor(
+      ( $(window).height() / px_per_em) + 0.5
+    );
+
+    opened_height_em
+      = window_height_em > configMap.window_height_min_em
+      ? configMap.slider_opened_em
+      : configMap.slider_opened_min_em;
+
+    stateMap.px_per_em = px_per_em;
+    stateMap.slider_closed_px = configMap.slider_closed_em * px_per_em;
+    stateMap.slider_opened_px = opened_height_em * px_per_em;
+    jqueryMap.$sizer.css({
+      height : ( opened_height_em - 2 ) * px_per_em
+    });
   };
   // DOM メソッド /setPxSize/↑
-  
+
   // パブリックDOMメソッド /setSliderPosition/ ↓
   //
   // 用例 : spa.chat.setSliderPosition( 'closed' );
@@ -136,53 +144,53 @@ spa.chat = (function () {
   // 例外発行 : なし
   //
   setSliderPosition = function (position_type, callback ){
-	var
-	  height_px, animate_time, slider_title, toggle_text;
-	
-	// スライダーがすでに要求された一にある場合は true を返す
-	if ( stateMap.position_type == position_type ) {
-	  return true;
-	}
-	
-	// アニメーションパラメータを用意する
-	switch ( position_type ) {
-	  case 'opened' :
-		height_px = stateMap.slider_opened_px;
-		animate_time = configMap.slider_open_time;
-		slider_title = configMap.slider_opened_title;
-		toggle_text = '=';
-	  break;
-	  
-	  case 'hidden' :
-		height_px = 0;
-		animate_time = configMap.slider_open_time;
-		slider_title = '';
-		toggle_text = '+';
-	  break;
-	  
-	  case 'closed' :
-		height_px = stateMap.slider_closed_px;
-		animate_time = configMap.slider_close_time;
-		slider_title = configMap.slider_closed_title;
-		toggle_text = '+';
-	  break;
-	  // 未知の position_type に対処する
-	  default : return false;
-	}
-	
-	// スライダー位置をアニメーションで変更する
-	stateMap.position_type = '';
-	jqueryMap.$slider.animate(
-	  { height : height_px },
-	  animate_time,
-	  function () {
-		jqueryMap.$toggle.prop( 'title', slider_title );
-		jqueryMap.$toggle.text( toggle_text );
-		stateMap.position_type = position_type;
-		if ( callback ) { callback (jqueryMap.$slider); }
+    var
+      height_px, animate_time, slider_title, toggle_text;
+
+    // スライダーがすでに要求された一にある場合は true を返す
+    if ( stateMap.position_type == position_type ) {
+      return true;
+    }
+
+    // アニメーションパラメータを用意する
+    switch ( position_type ) {
+      case 'opened' :
+        height_px = stateMap.slider_opened_px;
+        animate_time = configMap.slider_open_time;
+        slider_title = configMap.slider_opened_title;
+        toggle_text = '=';
+      break;
+
+      case 'hidden' :
+        height_px = 0;
+        animate_time = configMap.slider_open_time;
+        slider_title = '';
+        toggle_text = '+';
+      break;
+
+      case 'closed' :
+        height_px = stateMap.slider_closed_px;
+        animate_time = configMap.slider_close_time;
+        slider_title = configMap.slider_closed_title;
+        toggle_text = '+';
+      break;
+      // 未知の position_type に対処する
+      default : return false;
+    }
+
+    // スライダー位置をアニメーションで変更する
+    stateMap.position_type = '';
+    jqueryMap.$slider.animate(
+      { height : height_px },
+      animate_time,
+      function () {
+        jqueryMap.$toggle.prop( 'title', slider_title );
+        jqueryMap.$toggle.text( toggle_text );
+        stateMap.position_type = position_type;
+        if ( callback ) { callback (jqueryMap.$slider); }
       }
     );
-	return true;	
+    return true;
   };
   // パブリックDOMメソッド /setSliderPosition/ ↑
   //---------------------- DOMメソッド↑ ---------------------
@@ -190,14 +198,14 @@ spa.chat = (function () {
   //------------------- イベントハンドラ↓ -------------------
   //
   onClickToggle = function ( event ) {
-	var set_chat_anchor = configMap.set_chat_anchor;
-	if ( stateMap.position_type === 'opened' ){
-	  set_chat_anchor( 'closed' );
-	}
-	else if ( stateMap.position_type === 'closed' ){
-	  set_chat_anchor( 'opened' );
-	}
-	return false;
+    var set_chat_anchor = configMap.set_chat_anchor;
+    if ( stateMap.position_type === 'opened' ){
+      set_chat_anchor( 'closed' );
+    }
+    else if ( stateMap.position_type === 'closed' ){
+      set_chat_anchor( 'opened' );
+    }
+    return false;
   }
   //-------------------- イベントハンドラ↑ --------------------
 
@@ -243,55 +251,81 @@ spa.chat = (function () {
   // 動作 :
   //  指定されたコンテナにチャットスライダーを付加し、HTMLコンテンツで埋める
   //  そして、要素、イベント、ハンドラを初期化し、ユーザーにチャットルームインターフェイスを提供する。
-  // 戻り値    : 成功時 true, 失敗時 false 
+  // 戻り値    : 成功時 true, 失敗時 false
   // 例外発行     : なし
   //
   initModule = function ( $append_target ) {
-	$append_target.append( configMap.main_html );
+    $append_target.append( configMap.main_html );
     stateMap.$append_target = $append_target;
     setJqueryMap();
     setPxSizes();
-    
+
     // チャットスライダーをデフォルトのタイトルと状態で初期化する
     jqueryMap.$toggle.prop( 'title', configMap.slider_closed_title );
     jqueryMap.$head.click( onClickToggle );
     stateMap.position_type = 'closed';
-    
+
     return true;
   };
   // パブリックメソッド /initModule/ ↑
 
-  
+
   // パブリックメソッド /removeSlider/ ↓
   // 目的
   //  * DOM要素 chatSlider を削除する
   //  * 初期状態に戻す
   //  * コールバックや他のデータへのポインタを削除する
   // 引数  : なし
-  // 戻り値    : true 
+  // 戻り値    : true
   // 例外発行  : なし
   //
   removeSlider = function () {
-	// 初期化と状態を解除する
-	// DOMコンテナを削除する。イベントのバインディングも削除する。
-	if ( jqueryMap.$slider ) {
-		jqueryMap.$slider.remove();
-		jqueryMap = {};
-	}
-	stateMap.$append_target = null;
-	stateMap.position_type = 'closed';
-	
-	// 主な構成を解除する
-	configMap.chat_model = null;
-	configMap.people_model = null;
-	configMap.set_chat_anchor = null;
-	return true;
+    // 初期化と状態を解除する
+    // DOMコンテナを削除する。イベントのバインディングも削除する。
+    if ( jqueryMap.$slider ) {
+        jqueryMap.$slider.remove();
+        jqueryMap = {};
+    }
+    stateMap.$append_target = null;
+    stateMap.position_type = 'closed';
+
+    // 主な構成を解除する
+    configMap.chat_model = null;
+    configMap.people_model = null;
+    configMap.set_chat_anchor = null;
+    return true;
   };
+
   // パブリックメソッド /removeSlider/ ↑
+
+  // パブリックメソッド /handleResize/ ↓
+  // 目的
+  //  ウィンドウリサイズイベントに対し、必要に応じてこのモジュールが提供する表示を調整する
+  // 動作
+  //  ウィンドウの高さや幅が所定の閾値を下回ったら、
+  //  縮小したウィンドウサイズに合わせてチャットスライダーのサイズを変更する
+  // 戻り値    : ブール値
+  //   * false - リサイズを考慮していない
+  //   * true - リサイズを考慮した
+  // 例外発行  : なし
+  //
+  handleResize = function () {
+    // スライダーコンテントがなければ何もしない
+    if ( ! jqueryMap.$slider ) {return false;}
+
+    setPxSizes();
+    if ( stateMap.position_type === 'opened') {
+      jqueryMap.$slider.css({ height : stateMap.slider_opened_px });
+    }
+
+    return true;
+  };
+  // パブリックメソッド /handleResize/ ↑
+
 
   // パブリックメソッドを返す
   return {
-	setSliderPosition : setSliderPosition,
+    setSliderPosition : setSliderPosition,
     configModule : configModule,
     initModule   : initModule,
     removeSlider : removeSlider,

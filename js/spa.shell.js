@@ -18,6 +18,7 @@ spa.shell =(function () {
     anchor_schema_map : {
       chat : { opened : true, closed : true}
     },
+    resize_interval : 200,
     main_html : String()
       + '<div class="spa-shell-head">'
         + '<div class="spa-shell-head-logo">logo</div>'
@@ -32,22 +33,24 @@ spa.shell =(function () {
       + '<div class="spa-shell-modal">modal</div>'
   },
   stateMap = {
+    $container  : undefined,
     anchor_map  : {},
+    resize_idto : undefined
   },
   jqueryMap = {},
 
-  copyAnchorMap, setJqueryMap, 
+  copyAnchorMap, setJqueryMap,
   changeAnchorPart, onHashchange,
   setChatAnchor, initModule;
   //-------- モジュールスコープ変数終了 ------------
-  
+
   //-------- ユーティリティメソッド開始 ------------
   // 格納したアンカーマップのコピーを返す。オーバーヘッドを最小限にする。
   copyAnchorMap = function () {
     return $.extend(true, {}, stateMap.anchor_map);
   };
   //-------- ユーティリティメソッド終了 ------------
-  
+
   //-------- DOMメソッド開始 ------------
 
   //DOMメソッド/setJqueryMap/開始 ------------
@@ -170,22 +173,35 @@ spa.shell =(function () {
         }
     }
     // 変更されている場合のチャットコンポーネントの調整終了
-    
+
     // スライダーの変更が拒否された場合にアンカーを元に戻す処理を開始
     if ( !is_ok ){
       if ( anchor_map_previous ){
-    	$.uriAnchor.setAnchor( anchor_map_previous, null, true );
-    	stateMap.anchor_map = anchor_map_previous;
+        $.uriAnchor.setAnchor( anchor_map_previous, null, true );
+        stateMap.anchor_map = anchor_map_previous;
       } else {
-    	delete anchor_map_proposed.chat;
-    	$.uriAnchor.setAnchor( anchor_map_proposed, null, true );
+        delete anchor_map_proposed.chat;
+        $.uriAnchor.setAnchor( anchor_map_proposed, null, true );
       }
     }
     // スライダーの変更が拒否された場合にアンカーを元に戻す処理を終了
-    
+
     return false;
   };
   // イベントハンドラ/onHashchange/終了
+
+  // イベントハンドラ/onResize/開始
+  onResize = function () {
+    if ( stateMap.resize_idto ) { return true; }
+
+    spa.chat.handleResize();
+    stateMap.resize_idto = setTimeout(
+      function (){ stateMap.resize_idto = undefined; },
+      configMap.resize_interval
+    );
+    return true;
+  };
+  // イベントハンドラ/onResize/終了
 
   //-------- イベントハンドラ終了 ------------
 
@@ -193,7 +209,7 @@ spa.shell =(function () {
   //コールバックメソッド/setChatAnchor/開始 ------------
   // 用例 : setChatAnchor( 'closed')
   // 目的 : アンカーのチャットコンポーネントを変更する。
-  // 引数 : 
+  // 引数 :
   //  * position_type - "closed"または"opened"
   // 動作 :
   //   可能ならURIアンカーパラメータ chat を要求値に変更する。
@@ -203,8 +219,8 @@ spa.shell =(function () {
   // 例外発行 : なし
   //
   setChatAnchor = function ( position_type ){
-	return changeAnchorPart({ chat : position_type });
-  }
+    return changeAnchorPart({ chat : position_type });
+  };
   //コールバックメソッド/setChatAnchor/終了 ------------
   //-------- コールバックメソッド終了 ------------
 
@@ -222,7 +238,7 @@ spa.shell =(function () {
   // 例外発行 : なし
   //
   initModule = function ( $container ) {
-	// HTMLをロードし、jQueryコレクションをマッピングする
+    // HTMLをロードし、jQueryコレクションをマッピングする
     stateMap.$container = $container;
     $container.html( configMap.main_html );
     setJqueryMap();
@@ -246,6 +262,7 @@ spa.shell =(function () {
     // トリガーイベントはアンカーがロード状態とみなせることを保証するために使う。
     //
     $(window)
+      .bind( 'resize', onResize)
       .bind( 'hashchange', onHashchange)
       .trigger( 'hashchange');
 

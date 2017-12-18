@@ -1,5 +1,5 @@
 /* @CHARSET "UTF-8";*/
-/* 
+/*
  * spa.css
  * ルート名前空間スタイル
  *
@@ -13,15 +13,28 @@
     -moz-box-sizing    : border-box;
     box-sizing         : border-box;
   }
-  h1,h2,h3,h4,h5,h6,p {margin-bottom : 10px;}
+  h1,h2,h3,h4,h5,h6,p {margin-bottom : 6px;}
   ol,ul,dl {list-style-position : inside;}
 /** リセット終了 */
 
 /** 標準セレクタ開始 */
   body {
-    font : 13px 'Trebuchet M5', Verdana, Helvetica, Arial, sans-serif;
+    font : 10px 'Trebuchet M5', Verdana, Helvetica, Arial, sans-serif;
     color : #444;
     background-color : #aaa;
   }
+/** 標準セレクタ終了 */
 
-  
+/** spa名前空間セレクタ開始 */
+  #spa {
+    position  : absolute;
+    top       : 0;
+    left      : 0;
+    bottom    : 0;
+    right     : 0;
+    background: #fff;
+    min-height: 15em;
+    min-width : 35em;
+    overflow  : hidden;
+  }
+/** spa名前空間セレクタ終了 */
