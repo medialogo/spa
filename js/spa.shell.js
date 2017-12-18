@@ -21,16 +21,16 @@ spa.shell =(function () {
     resize_interval : 200,
     main_html : String()
       + '<div class="spa-shell-head">'
-        + '<div class="spa-shell-head-logo">logo</div>'
-        + '<div class="spa-shell-head-acct">acct</div>'
-        + '<div class="spa-shell-head-search">search</div>'
+        + '<div class="spa-shell-head-logo"></div>'
+        + '<div class="spa-shell-head-acct"></div>'
+        + '<div class="spa-shell-head-search"></div>'
       + '</div>'
       + '<div class="spa-shell-main">'
-        + '<div class="spa-shell-main-nav">nav</div>'
-        + '<div class="spa-shell-main-content">content</div>'
+        + '<div class="spa-shell-main-nav"></div>'
+        + '<div class="spa-shell-main-content"></div>'
       + '</div>'
-      + '<div class="spa-shell-foot">foot</div>'
-      + '<div class="spa-shell-modal">modal</div>'
+      + '<div class="spa-shell-foot"></div>'
+      + '<div class="spa-shell-modal"></div>'
   },
   stateMap = {
     $container  : undefined,

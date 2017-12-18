@@ -55,7 +55,7 @@ spa.chat = (function () {
       slider_opened_title : 'クリックして閉じる',
       slider_closed_title : 'クリックして開く',
       slider_opened_min_em : 10,
-      slider_height_min_em : 20,
+      window_height_min_em : 20,
 
       chat_model	: null,
       people_model	: null,
@@ -148,7 +148,7 @@ spa.chat = (function () {
       height_px, animate_time, slider_title, toggle_text;
 
     // スライダーがすでに要求された一にある場合は true を返す
-    if ( stateMap.position_type == position_type ) {
+    if ( stateMap.position_type === position_type ) {
       return true;
     }
 
