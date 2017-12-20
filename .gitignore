@@ -1,4 +1,8 @@
 .project
 .settings/*
 arch
-js/jq
+js/jq/
+!js/jq/jquery.event.*.js
+!js/jq/jquery.min.js
+!js/jq/jquery.uriAnchor.js
+!js/jq/taffy-min.js
