@@ -16,36 +16,36 @@
 /*global TAFFY, $, spa */
 
 spa.model = (function () {
-    // peopleオブジェクトAPI
-    // ---------------------
-    // peopleオブジェクトはspa.model.peopleで利用できる。
-    // peopleオブジェクトはpersonオブジェクトの集合管理するためのメソッドとイベントを提供する。
-    // peopleオブジェクトのパブリックメソッドは以下のとおり。
-    //  * get_user() - 現在のpersonオブジェクトを返す。
-    //  	             現在のユーザがサインインしていない場合には、匿名personオブジェクトを返す。
-    //  * get_db() - あらかじめソートされたすべてのpersonオブジェクト（現在のユーザーを含む）の
-    //	             TaffyDBデータベースを返す。
-    //  * get_by_cid( <client_id> ) - 指定された一意のIDを持つpersonオブジェクトを返す。
-    //  * login(<user_name>) - 指定のユーザ名を持つユーザとしてログインする。
-    //  * logout() - 現在のユーザオブジェクトを匿名に戻す。
-    //
-    // このオブジェクトが発行するjQueryグローバルイベントの以下のとおり。
-    //  * spa-login - ユーザのログイン処理が完了した時に発行される。
-    //    更新されたユーザオブジェクトをデータとして提供する。
-    //  * spa-logout - ログアウトの完了時に発行される。
-    //    以前の(匿名)ユーザオブジェクトをデータとして提供する。
-    //
-    // それぞれの人はpersonオブジェクトで表される。
-    //
-    // personオブジェクトは以下のメソッドを提供する。
-    //  * get_is_user() - オブジェクトが現在のユーザの場合にtrueを返す。
-    //  * get_is_anon() - オブジェクトが匿名の場合にtrueを返す。
-    // personオブジェクトの属性は以下の通り。
-    //  * cid - クライアントID文字列。これは常に定義され、クライアントデータがバックエンドと
-    //          同期していない場合のみid属性と異なる。
-    //  * id - 一意のID。オブジェクトがバックエンドと同期していない場合には未定義になることがある。
-    //  * name - ユーザ名の文字列。
-    //  * css_map = アバター表現に使う属性のマップ
+  // peopleオブジェクトAPI
+  // ---------------------
+  // peopleオブジェクトはspa.model.peopleで利用できる。
+  // peopleオブジェクトはpersonオブジェクトの集合管理するためのメソッドとイベントを提供する。
+  // peopleオブジェクトのパブリックメソッドは以下のとおり。
+  //  * get_user() - 現在のpersonオブジェクトを返す。
+  //  	             現在のユーザがサインインしていない場合には、匿名personオブジェクトを返す。
+  //  * get_db() - あらかじめソートされたすべてのpersonオブジェクト（現在のユーザーを含む）の
+  //	             TaffyDBデータベースを返す。
+  //  * get_by_cid( <client_id> ) - 指定された一意のIDを持つpersonオブジェクトを返す。
+  //  * login(<user_name>) - 指定のユーザ名を持つユーザとしてログインする。
+  //  * logout() - 現在のユーザオブジェクトを匿名に戻す。
+  //
+  // このオブジェクトが発行するjQueryグローバルイベントの以下のとおり。
+  //  * spa-login - ユーザのログイン処理が完了した時に発行される。
+  //    更新されたユーザオブジェクトをデータとして提供する。
+  //  * spa-logout - ログアウトの完了時に発行される。
+  //    以前の(匿名)ユーザオブジェクトをデータとして提供する。
+  //
+  // それぞれの人はpersonオブジェクトで表される。
+  //
+  // personオブジェクトは以下のメソッドを提供する。
+  //  * get_is_user() - オブジェクトが現在のユーザの場合にtrueを返す。
+  //  * get_is_anon() - オブジェクトが匿名の場合にtrueを返す。
+  // personオブジェクトの属性は以下の通り。
+  //  * cid - クライアントID文字列。これは常に定義され、クライアントデータがバックエンドと
+  //          同期していない場合のみid属性と異なる。
+  //  * id - 一意のID。オブジェクトがバックエンドと同期していない場合には未定義になることがある。
+  //  * name - ユーザ名の文字列。
+  //  * css_map = アバター表現に使う属性のマップ
 
 
 
@@ -61,11 +61,43 @@ spa.model = (function () {
 
     isFakeData = true,
 
-    personProto, makePerson, peaple, initModule;
+    personProto, makePerson, people, initModule;
   //----------------- モジュールスコープ変数↑ ---------------
 
   //------------------- ユーティリティメソッド↓ ------------------
-  // example : getTrimmedString
+  personProto = {
+      get_is_user : function () { // オブジェクトが現在のユーザの場合にtrueを返す
+          return this.cid === stateMap.user.cid;
+      },
+      get_is_anon : function () { // オブジェクトが匿名ユーザの場合にtrueを返す
+          return this.cid === stateMap.anon_user.cid;
+      }
+  };
+
+  makePerson = function ( person_map ) {
+    var person,
+          cid			= person_map.cid,
+          css_map = person_map.css_map,
+          id 			= person_map.id,
+          name		= person_map.name;
+
+    if ( cid === undefined || !name ) {
+        throw 'クライアントid と名前が必要です';
+    }
+
+    // personオブジェクトを作成
+    person			= Object.create( personProto );
+    person.cid	= cid;
+    person.name = name;
+    person.css_map = css_map;
+
+    if ( id ) { person.id = id; }
+
+    stateMap.people_cid_map[ cid ] = person;
+    stateMap.people_db.insert( person );
+
+    return person;
+  };
   //-------------------- ユーティリティメソッド↑ -------------------
 
   //--------------------- DOMメソッド↓ --------------------
@@ -79,11 +111,11 @@ spa.model = (function () {
 
   //------------------- パブリックメソッド↓ -------------------
   // パブリックメソッド /people/ ↓
-
   people = {
     get_db      : function () { return stateMap.people_db; },
     get_cid_map : function () { return stateMap.people_cid_map; },
   };
+  // パブリックメソッド /people/ ↑
 
   // パブリックメソッド /initModule/ ↓
   // 目的     : モジュールを初期化する
@@ -100,7 +132,7 @@ spa.model = (function () {
       id  : configMap.anon_id,
       name: 'anonymous'
     });
-    stateMap.user = stateMap.anon_user;
+    stateMap.user = stateMap.anon_user; // 現在のユーザの初期値は匿名ユーザ
 
     if ( isFakeData ) {
       people_list = spa.fake.getPeopleList();
