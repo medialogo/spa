@@ -14,80 +14,34 @@
 /*global $, spa */
 
 spa.fake = (function () {
-/*
-  //---------------- モジュールスコープ変数↓ --------------
-  var
-    configMap = {
-      settable_map : { color_name: true },
-      color_name   : 'blue'
-    },
-    stateMap  = { $container : null },
-    jqueryMap = {},
-
-    setJqueryMap, configModule, initModule;
-  //----------------- モジュールスコープ変数↑ ---------------
-
-  //------------------- ユーティリティメソッド↓ ------------------
-  // example : getTrimmedString
-  //-------------------- ユーティリティメソッド↑ -------------------
-
-  //--------------------- DOMメソッド↓ --------------------
-  // DOM メソッド /setJqueryMap/↓
-  setJqueryMap = function () {
-    var $container = stateMap.$container;
-
-    jqueryMap = { $container : $container };
-  };
-  // DOM メソッド /setJqueryMap/ ↑
-  //---------------------- DOMメソッド↑ ---------------------
-
-  //------------------- イベントハンドラ↓ -------------------
-  // example: onClickButton = ...
-  //-------------------- イベントハンドラ↑ --------------------
-
-
-
-  //------------------- パブリックメソッド↓ -------------------
-  // パブリックメソッド /configModule/ ↓
-  // 目的    : 許可されたキーの構成を調整する
-  // 引数  : 設定可能なキー値ペアのマップ
-  //   * color_name - 使用する色
-  // 設定   :
-  //   * configMap.settable_map 許可されるキーを宣言
-  // 戻り値    : true
-  // 例外発行     : なし
-
-  configModule = function ( input_map ) {
-    spa.util.setConfigMap({
-      input_map    : input_map,
-      settable_map : configMap.settable_map,
-      config_map   : configMap
-    });
-    return true;
-  };
-  // パブリックメソッド /configModule/ ↑
-
-  // パブリックメソッド /initModule/ ↓
-  // 目的    : モジュールを初期化する
-  // 引数  :
-  //  * $container この機能で使用する jQuery 要素
-  // 戻り値    : true
-  // 例外発行     : なし
-  //
-  initModule = function ( $container ) {
-    stateMap.$container = $container;
-    setJqueryMap();
-    return true;
-  };
-  // パブリックメソッド /initModule/ ↑
-
-  // パブリックメソッドを返す
-  return {
-    configModule : configModule,
-    initModule   : initModule
-  };
-  */
-	return {};
+  'use strict';
+  var getPeopleList;
   
-  //------------------- パブリックメソッド↑ ---------------------
+  getPeopleList = function() {
+	return [
+	  { name : 'Betty', _id : 'id__01',
+		css_map : { top: 20, left: 20, 
+		'background-color' : 'rgb((128, 128, 128)' 
+	    }
+	  },
+	  { name : 'Mike', _id : 'id__02',
+		css_map : { top: 60, left: 20, 
+		'background-color' : 'rgb((128, 255, 128)' 
+	    }
+	  },
+	  { name : 'Pebbles', _id : 'id__03',
+		css_map : { top: 100, left: 20, 
+		'background-color' : 'rgb((128, 192, 192)' 
+	    }
+	  },
+	  { name : 'Wilma', _id : 'id__04',
+		css_map : { top: 140, left: 20, 
+		'background-color' : 'rgb((192, 128, 128)' 
+	    }
+	  }
+	];
+  };
+  
+  return { getPeopleList : getPeopleList };
+  
 }());
