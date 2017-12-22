@@ -16,6 +16,25 @@
 /*global TAFFY, $, spa */
 
 spa.model = (function () {
+
+  'use strict';
+  //---------------- モジュールスコープ変数↓ --------------
+  var
+    configMap = { anon_id : 'a0'},
+    stateMap  = {
+      anon_user	: null,   // 匿名personオブジェクトを格納
+      cid_serial: 0,
+      people_cid_map : {},// クライアントIDをキーとしたpersonオブジェクトのマップ
+      people_db		 : TAFFY(), //personオブジェクトのTaffyDBコレクションを格納
+      user			: null,
+    },
+
+    isFakeData = true,
+
+    personProto, makeCid, clearPeopleDb, completeLogin,
+    makePerson, removePerson, people, initModule;
+  //----------------- モジュールスコープ変数↑ ---------------
+
   // peopleオブジェクトAPI
   // ---------------------
   // peopleオブジェクトはspa.model.peopleで利用できる。
@@ -47,24 +66,6 @@ spa.model = (function () {
   //  * name - ユーザ名の文字列。
   //  * css_map = アバター表現に使う属性のマップ
 
-
-
-  'use strict';
-  //---------------- モジュールスコープ変数↓ --------------
-  var
-    configMap = { anon_id : 'a0'},
-    stateMap  = {
-      anon_user	: null,   // 匿名personオブジェクトを格納
-      people_cid_map : {},// クライアントIDをキーとしたpersonオブジェクトのマップ
-      people_db		 : TAFFY() //personオブジェクトのTaffyDBコレクションを格納
-    },
-
-    isFakeData = true,
-
-    personProto, makePerson, people, initModule;
-  //----------------- モジュールスコープ変数↑ ---------------
-
-  //------------------- ユーティリティメソッド↓ ------------------
   personProto = {
       get_is_user : function () { // オブジェクトが現在のユーザの場合にtrueを返す
           return this.cid === stateMap.user.cid;
@@ -73,6 +74,33 @@ spa.model = (function () {
           return this.cid === stateMap.anon_user.cid;
       }
   };
+
+  makeCid = function (){
+      return 'c' + String( stateMap.cid_serial++ );
+  };
+
+  clearPeopleDb = function (){
+      var user = stateMap.user;
+      stateMap.people_db = TAFFY();
+      stateMap.people_cid_map = {};
+      if ( user ) {
+          stateMap.people_db.insert( user );
+          stateMap.people_cid_map[ user.cid ] = user;
+      }
+  };
+
+  completeLogin = function ( user_list ) {
+      var user_map = user_list[0];
+      delete stateMap.people_cid_map[ user_map.cid ];
+      stateMap.user.cid = user_map._id;
+      stateMap.user.id = user_map._id;
+      stateMap.user.css_map = user_map.css_map;
+      stateMap.people_cid_map[ user_map._id ] = stateMap.user;
+
+      // チャットを追加するときは、ここで参加すべき
+      $.gevent.publish( 'spa-login', [ stateMap.user ]);
+  };
+
 
   makePerson = function ( person_map ) {
     var person,
@@ -98,23 +126,72 @@ spa.model = (function () {
 
     return person;
   };
-  //-------------------- ユーティリティメソッド↑ -------------------
 
-  //--------------------- DOMメソッド↓ --------------------
-  //---------------------- DOMメソッド↑ ---------------------
+  removePerson = function ( person ){
+      if ( ! person ){ return false; }
+      // 匿名ユーザは削除できない
+      if ( person.id === configMap.anon_id ){
+          return false;
+      }
 
-  //------------------- イベントハンドラ↓ -------------------
-  // example: onClickButton = ...
-  //-------------------- イベントハンドラ↑ --------------------
-
-
+      stateMap.people_db({ cid : person.cid }).remove();
+      if ( person.cid ){
+          delete stateMap.people_cid_map[ person.cid ];
+      }
+      return true;
+  };
 
   //------------------- パブリックメソッド↓ -------------------
   // パブリックメソッド /people/ ↓
-  people = {
-    get_db      : function () { return stateMap.people_db; },
-    get_cid_map : function () { return stateMap.people_cid_map; },
-  };
+  people = (function (){
+    var get_by_cid, get_db, get_user, login, logout;
+
+    get_by_cid = function ( cid ){
+        return stateMap.people_cid_map[ cid ];
+    };
+
+    get_db = function () { return stateMap.people_db; };
+
+    get_user = function () { return stateMap.user; };
+
+    login = function ( name ) {
+      var sio = isFakeData ? spa.fake.mockSio : spa.data.getSio();
+
+      stateMap.user = makePerson({
+          cid : makeCid(),
+          css_map : {top : 25, left : 25, 'background-color':'#8f8'},
+          name : name
+      });
+
+      sio.on( 'userupdate', completeLogin );
+
+      sio.emit( 'adduser', {
+          cid 	 : stateMap.user.cid,
+          css_map: stateMap.user.css_map,
+          name	 : stateMap.user.name
+      });
+    };
+
+    logout = function () {
+      var is_removed, user = stateMap.user;
+      //チャットを追加するときには、ここでチャットルームから出るべき
+
+      is_removed		= removePerson( user );
+      stateMap.user = stateMap.anon_user;
+
+      $.gevent.publish( 'spa-logout', [ user ]);
+      return is_removed;
+    };
+
+    return {
+      bet_by_cid	: get_by_cid,
+      get_db			: get_db,
+      get_user		: get_user,
+      login				: login,
+      logout			: logout
+    };
+  }());
+
   // パブリックメソッド /people/ ↑
 
   // パブリックメソッド /initModule/ ↓
