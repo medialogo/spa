@@ -217,7 +217,7 @@ spa.shell =(function () {
   	if ( user.get_is_anon() ) {
   		user_name = prompt( 'サインインしてください' );
   		spa.model.people.login( user_name );
-  		jqueryMap.$acct.text('... processing ...');
+  		jqueryMap.$acct.text('... ログイン処理中 ...');
   	} else {
   		spa.model.people.logout();
   	}
@@ -285,6 +285,13 @@ spa.shell =(function () {
     });
     spa.chat.initModule( jqueryMap.$container );
 
+    $.gevent.subscribe( $container, 'spa-login', onLogin );
+    $.gevent.subscribe( $container, 'spa-logout', onLogout );
+    
+    jqueryMap.$acct
+    	.text( 'サインインしてください' )
+    	.bind( 'utap', onTapAcct );
+    
     // URIアンカー変更イベントを処理する。
     // これはすべての機能モジュールを設定して初期化した後に行う
     // そうしないと、トリガーイベントを処理できる状態になっていない。
@@ -295,12 +302,7 @@ spa.shell =(function () {
       .bind( 'hashchange', onHashchange)
       .trigger( 'hashchange');
 
-    $.gevent.subscribe( $container, 'spa-login', onLogin );
-    $.gevent.subscribe( $container, 'spa-logout', onLogout );
-    
-    jqueryMap.$acct
-    	.text( 'サインインしてください' )
-    	.bind( 'utap', onTapAcct );
+
   };
   //パブリックメソッド/initModule/終了 ------------
   return { initModule : initModule};

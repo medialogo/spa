@@ -79,10 +79,10 @@
    left   :0;
   }
 .spa-shell-foot {
-  top   :0;
-  left  :0;
-  right :0;
-  height:40px;
+  bottom : 0;
+  left  : 0;
+  right : 0;
+  height: 40px;
 }
 
 .spa-shell-modal {
