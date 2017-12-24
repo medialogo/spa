@@ -215,9 +215,9 @@ spa.shell =(function () {
   onTapAcct = function ( event ) {
   	var acct_text, user_name, user = spa.model.people.get_user();
   	if ( user.get_is_anon() ) {
-  		user_name = prompt( 'サインインしてください' );
+  		user_name = prompt( '名前を入力してください' );
   		spa.model.people.login( user_name );
-  		jqueryMap.$acct.text('... ログイン処理中 ...');
+  		jqueryMap.$acct.text('... ログインしています ...');
   	} else {
   		spa.model.people.logout();
   	}
@@ -229,7 +229,10 @@ spa.shell =(function () {
   };
   
   onLogout = function ( event, logout_user ) {
-  	jqueryMap.$acct.text( 'サインインしてください' );
+  	jqueryMap.$acct.text( 'ログアウトしました' );
+    setTimeout( function () {
+    	jqueryMap.$acct.text( 'クリックしてログイン' );
+    },1000);
   };
 
   //-------- イベントハンドラ終了 ------------
@@ -289,7 +292,7 @@ spa.shell =(function () {
     $.gevent.subscribe( $container, 'spa-logout', onLogout );
     
     jqueryMap.$acct
-    	.text( 'サインインしてください' )
+    	.text( 'クリックしてログイン' )
     	.bind( 'utap', onTapAcct );
     
     // URIアンカー変更イベントを処理する。
