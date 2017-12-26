@@ -27,12 +27,13 @@ spa.model = (function () {
       people_cid_map : {},// クライアントIDをキーとしたpersonオブジェクトのマップ
       people_db		 : TAFFY(), //personオブジェクトのTaffyDBコレクションを格納
       user			: null,
+      is_connected : false, // ユーザーが現在チャットルームにいるかどうか
     },
 
     isFakeData = true,
 
     personProto, makeCid, clearPeopleDb, completeLogin,
-    makePerson, removePerson, people, initModule;
+    makePerson, removePerson, people, chat, initModule;
   //----------------- モジュールスコープ変数↑ ---------------
 
   // peopleオブジェクトAPI
@@ -191,8 +192,29 @@ spa.model = (function () {
       logout			: logout
     };
   }());
-
   // パブリックメソッド /people/ ↑
+
+  // chatオブジェクトAPI
+  // --------------------
+  // chatオブジェクトはspa.modelchatで利用できる
+  // chatオブジェクトはチャットメッセージングを管理するためのメソッドとイベントを提供する。
+  // chatオブジェのパブリックメソッドは以下のとおり。
+  //  * join() - チャットルームに参加する。このルーチンは、
+  //		「spa-listchange」と「spaupdatechat」グローバルカスタムイベントのための
+  //    パブリッシャを含むバックエンドとのチャットプロトコルを確立する。
+  //    現在のユーザが匿名の場合、join()は中断してfalseを返す。
+  //  * get_chatee() - ユーザがチャットしている相手のpersonオブジェクトを返す。
+  //    チャット相手がいない場合はnullを返す。
+  //  * set_chatee(<person_id>) - チャット相手をperson_idで特定されるユーザに設定する。
+  //    person_idがユーザリストに存在しない場合は、チャット相手をnullに設定する。
+  //    「spa-chatee」イベントを発行する。
+  //  * send_msg( <msg_text> ) - チャット相手にメッセージを送信する。
+  //    「spa-updatechat」グローバルカスタムイベントを発行する。
+  //    ユーザが匿名またはチャット相手がnullの場合には、中断してfalseを返す。
+  //  * update_avtr_map - を送信する。これにより、更新されたユーザリストと
+  //    アバター情報(psersonオブジェクトのcss_map）を含む「spa-listchange」イベントが発行される。
+  //    update_avtr_mapは以下のような形式であること。
+  //    { person_id : person_id, css_map : css_map }
 
   // パブリックメソッド /initModule/ ↓
   // 目的     : モジュールを初期化する
