@@ -200,7 +200,7 @@ spa.model = (function () {
   // chatオブジェクトはチャットメッセージングを管理するためのメソッドとイベントを提供する。
   // chatオブジェのパブリックメソッドは以下のとおり。
   //  * join() - チャットルームに参加する。このルーチンは、
-  //		「spa-listchange」と「spaupdatechat」グローバルカスタムイベントのための
+  //   「spa-listchange」と「spaupdatechat」グローバルカスタムイベントのための
   //    パブリッシャを含むバックエンドとのチャットプロトコルを確立する。
   //    現在のユーザが匿名の場合、join()は中断してfalseを返す。
   //  * get_chatee() - ユーザがチャットしている相手のpersonオブジェクトを返す。
@@ -215,6 +215,95 @@ spa.model = (function () {
   //    アバター情報(psersonオブジェクトのcss_map）を含む「spa-listchange」イベントが発行される。
   //    update_avtr_mapは以下のような形式であること。
   //    { person_id : person_id, css_map : css_map }
+  //
+  //  このオブジェクトが発行するjQueryグローバルカスタムイベントは以下の通り。
+  //  * spa-setchatee - 新しいチャット相手が設定されたときに発行される。
+  //   以下の形式のマップをデータとして提供する。
+  //     { old_chatee : <old_chatee_person_object>,
+  //       new_chatee : <new_chatee_person_object>
+  //     }
+  //  * spa-listchange - オンラインユーザのリスト長が変ったとき
+  //  （ユーザがチャットに参加または退出したとき）、または内容が変ったとき
+  //  （ユーザのアバター詳細が変ったとき）に発行される。
+  //   このイベントへの登録者は、更新データとしてpeopleモデルからpeople_dbを取得すべき。
+  //  * spa-updatechat - 新しいメッセージを送受信したときに発行される。
+  //   以下の形式のマップをデータとして提供する。
+  //     { dest_id   : <chatee_id>,
+  //       dest_name : <chatee_name>,
+  //       sender_id : <sender_id>,
+  //       msg_text  : <message_content>
+  //     }
+
+  chat = (function () {
+    var
+      _publish_listchange, _update_list, _leave_chat,
+      join_chat;
+
+    // 内部メソッド↓
+    _update_list = function( arg_list ) {
+      var i, person_map, make_person_map,
+        people_list = arg_list[0];
+
+      clearPeopleDb();
+
+      PERSON:
+      for ( i = 0; i < people_list.length; i++ ){
+        person_map = people_list[ i ];
+
+        if ( ! person_map.name ) { continue PERSON; }
+
+        // ユーザを特定したら、css_mapを更新して残りを跳ばす
+        if ( stateMap.user && stateMap.user.id === person_map.id ) {
+            stateMap.user.css_map = person_map.css_map;
+            continue PERSON;
+        }
+
+        make_person_map = {
+          cid		  : person_map.id,
+          css_map : person_map.css_map,
+          id			: person_map._id,
+          name		: person_map.name
+        };
+
+        makePerson( make_person_map );
+      }
+      stateMap.people_db.sort( 'name' );
+    };
+
+    _publish_listchange = function (arg_list ){
+        _update_list( arg_list);
+        $.gevent.publish( 'spa-listchange', [arg_list] );
+    };
+    // 内部メソッド↑
+
+    _leave_chat = function () {
+        var sio = isFakeDate ? spa.fake.mockSio : spa.data.getSio();
+        stateMap.is_connected = false;
+        if ( sio ) { sio.emit( 'leavechat' ); }
+    };
+
+    join_chat = function() {
+        var  sio;
+
+        if ( stateMap.is_connected ) { return false; }
+
+        if ( stateMap.user.get_is_anon() ) {
+            console.warn( 'User must be defined before joining chat');
+            return false;
+        }
+
+        sio = isFakeDate ? spa.fake.mockSio : spa.data.getSio();
+        sio.on( 'listchange', _publish_listchange );
+        stateMap.is_connected = true;
+        return true;
+    };
+
+    return {
+        _leave : _leave_chat,
+        join : join_chat
+    };
+
+  }());
 
   // パブリックメソッド /initModule/ ↓
   // 目的     : モジュールを初期化する
@@ -223,7 +312,7 @@ spa.model = (function () {
   // 例外発行 : なし
   //
   initModule = function () {
-    var i, people_list, person_map;
+    //var i, people_list, person_map;
 
     // 匿名ユーザを初期化する
     stateMap.anon_user = makePerson({
@@ -233,6 +322,7 @@ spa.model = (function () {
     });
     stateMap.user = stateMap.anon_user; // 現在のユーザの初期値は匿名ユーザ
 
+    /*
     if ( isFakeData ) {
       people_list = spa.fake.getPeopleList();
       for ( i = 0; i < people_list.length; i++ ){
@@ -244,13 +334,15 @@ spa.model = (function () {
               name		: person_map.name
           });
       }
-    }
+    }*/
+
   };
   // パブリックメソッド /initModule/ ↑
 
   // パブリックメソッドを返す
   return {
     initModule  : initModule,
+    chat				: chat,
     people			: people
   };
   //------------------- パブリックメソッド↑ ---------------------
