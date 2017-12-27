@@ -15,7 +15,7 @@
 
 spa.fake = (function () {
   'use strict';
-  var getPeopleList, fakeIdSerial, makeFakeId, mockSio;
+  var peopleList, fakeIdSerial, makeFakeId, mockSio;
 
   fakeIdSerial = 5;
 
@@ -23,60 +23,76 @@ spa.fake = (function () {
       return 'id_' + String( fakeIdSerial++ );
   };
 
-  getPeopleList = function() {
-    return [
-      { name : 'Betty', _id : 'id_01',
-        css_map : { top: 20, left: 20,
-        'background-color' : 'rgb((128, 128, 128)'
-        }
-      },
-      { name : 'Mike', _id : 'id_02',
-        css_map : { top: 60, left: 20,
-        'background-color' : 'rgb((128, 255, 128)'
-        }
-      },
-      { name : 'Pebbles', _id : 'id_03',
-        css_map : { top: 100, left: 20,
-        'background-color' : 'rgb((128, 192, 192)'
-        }
-      },
-      { name : 'Wilma', _id : 'id_04',
-        css_map : { top: 140, left: 20,
-        'background-color' : 'rgb((192, 128, 128)'
-        }
+  peopleList = [
+    { name : 'Betty', _id : 'id_01',
+      css_map : { top: 20, left: 20,
+      'background-color' : 'rgb((128, 128, 128)'
       }
-    ];
-  };
+    },
+    { name : 'Mike', _id : 'id_02',
+      css_map : { top: 60, left: 20,
+      'background-color' : 'rgb((128, 255, 128)'
+      }
+    },
+    { name : 'Pebbles', _id : 'id_03',
+      css_map : { top: 100, left: 20,
+      'background-color' : 'rgb((128, 192, 192)'
+      }
+    },
+    { name : 'Wilma', _id : 'id_04',
+      css_map : { top: 140, left: 20,
+      'background-color' : 'rgb((192, 128, 128)'
+      }
+    }
+  ];
 
   mockSio = (function () {
-      var on_sio, emit_sio, callback_map = {};
+      var
+          on_sio, emit_sio,
+          send_listchange, listchange_idto,
+          callback_map = {};
 
       on_sio = function ( msg_type, callback ){
           callback_map[ msg_type ] = callback;
       };
 
       emit_sio = function ( msg_type, data ){
+          var person_map;
 
-          // 3秒間の遅延後に「userupdate」コールバックで
-          // 「adduser」イベントに応答する
-          //
-          if ( msg_type === 'adduser' && callback_map.userupdate ){
-              setTimeout( function () {
-                  callback_map.userupdate(
-                    [{ _id 		: makeFakeId(),
-                         name		: data.name,
-                         css_map:	data.css_map
-                    }]
-                  );
-              },3000);
-          }
+        // 3秒間の遅延後に「userupdate」コールバックで
+        // 「adduser」イベントに応答する
+        //
+        if ( msg_type === 'adduser' && callback_map.userupdate ){
+          setTimeout( function () {
+              person_map = {
+                  _id 		: makeFakeId(),
+              name		: data.name,
+              css_map :	data.css_map
+            };
+              people_list.push( person_map );
+              callback_map.userupdate( [peopleList ]);
+          },3000);
+        }
       };
+
+      // 1秒間に1回 listchange コールバックを使うようにする。
+      // 一度成功したら止める。
+      send_listchange = function() {
+          listchange_idto =setTimeout( function() {
+            if (callback_map.listchange ) {
+                callback_map.listchange([ peopleList ]);
+                listchange_idto = undefined;
+            }
+            else { send_listchange(0) };
+          }, 1000);
+      };
+
+      // 処理を開始する必要がある
 
       return { emit : emit_sio, on : on_sio };
   }());
 
   return {
-      getPeopleList : getPeopleList,
       mockSio	: mockSio
   };
 }());
