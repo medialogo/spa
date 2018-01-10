@@ -69,7 +69,7 @@ spa.fake = (function () {
               name		: data.name,
               css_map :	data.css_map
             };
-              people_list.push( person_map );
+              peopleList.push( person_map );
               callback_map.userupdate( [peopleList ]);
           },3000);
         }
@@ -83,11 +83,12 @@ spa.fake = (function () {
                 callback_map.listchange([ peopleList ]);
                 listchange_idto = undefined;
             }
-            else { send_listchange(0) };
+            else { send_listchange(0); };
           }, 1000);
       };
 
       // 処理を開始する必要がある
+      send_listchange();
 
       return { emit : emit_sio, on : on_sio };
   }());
