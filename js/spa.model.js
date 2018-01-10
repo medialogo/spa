@@ -292,7 +292,7 @@ spa.model = (function () {
             return false;
         }
 
-        sio = isFakeDate ? spa.fake.mockSio : spa.data.getSio();
+        sio = isFakeData ? spa.fake.mockSio : spa.data.getSio();
         sio.on( 'listchange', _publish_listchange );
         stateMap.is_connected = true;
         return true;
