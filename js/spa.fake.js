@@ -83,7 +83,7 @@ spa.fake = (function () {
                 callback_map.listchange([ peopleList ]);
                 listchange_idto = undefined;
             }
-            else { send_listchange(0); };
+            else { send_listchange(); };
           }, 1000);
       };
 

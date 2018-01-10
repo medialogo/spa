@@ -253,13 +253,13 @@ spa.model = (function () {
         if ( ! person_map.name ) { continue PERSON; }
 
         // ユーザを特定したら、css_mapを更新して残りを跳ばす
-        if ( stateMap.user && stateMap.user.id === person_map.id ) {
+        if ( stateMap.user && stateMap.user.id === person_map._id ) {
             stateMap.user.css_map = person_map.css_map;
             continue PERSON;
         }
 
         make_person_map = {
-          cid		  : person_map.id,
+          cid		  : person_map._id,
           css_map : person_map.css_map,
           id			: person_map._id,
           name		: person_map.name
@@ -277,7 +277,7 @@ spa.model = (function () {
     // 内部メソッド↑
 
     _leave_chat = function () {
-        var sio = isFakeDate ? spa.fake.mockSio : spa.data.getSio();
+        var sio = isFakeData ? spa.fake.mockSio : spa.data.getSio();
         stateMap.is_connected = false;
         if ( sio ) { sio.emit( 'leavechat' ); }
     };
