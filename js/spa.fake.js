@@ -66,11 +66,11 @@ spa.fake = (function () {
           setTimeout( function () {
               person_map = {
                   _id 		: makeFakeId(),
-              name		: data.name,
-              css_map :	data.css_map
+                  name		: data.name,
+                  css_map :	data.css_map
             };
               peopleList.push( person_map );
-              callback_map.userupdate( [peopleList ]);
+              callback_map.userupdate( [ person_map ]);
           },3000);
         }
       };
