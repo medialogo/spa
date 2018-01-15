@@ -175,19 +175,18 @@ spa.model = (function () {
     };
 
     logout = function () {
-      var is_removed, user = stateMap.user;
+      var user = stateMap.user;
       
       //チャットルームから退出
       chat._leave();
-      is_removed		= removePerson( user );
       stateMap.user = stateMap.anon_user;
+      clearPeopleDb();
 
       $.gevent.publish( 'spa-logout', [ user ]);
-      return is_removed;
     };
 
     return {
-      bet_by_cid	: get_by_cid,
+      get_by_cid	: get_by_cid,
       get_db			: get_db,
       get_user		: get_user,
       login				: login,
@@ -213,7 +212,8 @@ spa.model = (function () {
   //  * send_msg( <msg_text> ) - チャット相手にメッセージを送信する。
   //    「spa-updatechat」グローバルカスタムイベントを発行する。
   //    ユーザが匿名またはチャット相手がnullの場合には、中断してfalseを返す。
-  //  * update_avtr_map - を送信する。これにより、更新されたユーザリストと
+  //  * update_avatar( <update_avtr_map> )  - バックエンドに
+  //  　update_avtr_map - を送信する。これにより、更新されたユーザリストと
   //    アバター情報(psersonオブジェクトのcss_map）を含む「spa-listchange」イベントが発行される。
   //    update_avtr_mapは以下のような形式であること。
   //    { person_id : person_id, css_map : css_map }
@@ -239,12 +239,12 @@ spa.model = (function () {
   chat = (function () {
     var
       _publish_listchange, _publish_updatechat, _update_list, _leave_chat,
-      get_chatee, join_chat, send_msg, set_chatee,
+      get_chatee, join_chat, send_msg, set_chatee, update_avatar,
       chatee = null;
 
     // 内部メソッド↓
     _update_list = function( arg_list ) {
-      var i, person_map, make_person_map,
+      var i, person_map, make_person_map, person,
         people_list = arg_list[0],
         is_chatee_online = false;
 
@@ -268,9 +268,11 @@ spa.model = (function () {
           id			: person_map._id,
           name		: person_map.name
         };
+        person = makePerson( make_person_map );
         
         if ( chatee && chatee.id === make_person_map.id ) {
           is_chatee_online = true;	
+          chatee = person;
         }
         makePerson( make_person_map );
       }
@@ -363,13 +365,29 @@ spa.model = (function () {
     	return true;
     };
     
+    // avatar_update_map は以下の形式を持つべき。
+    // { person_id : <string>, css_map : {
+    //   top : <int>, left : <int>,
+    //   'background-color' : <string>
+    //  }};
+    //
+    update_avatar = function ( avatar_update_map ){
+    	var sio = isFakeData ? spa.fake.mockSio : spa.data.getSid();
+    	if ( sio ) {
+    		sio.emit( 'updateavatar', avatar_update_map );
+    	}
+    };
+    
     return {
         _leave 			: _leave_chat,
         get_chatee 	: get_chatee,
         join 				: join_chat,
         send_msg		: send_msg,
-        set_chatee	: set_chatee
+        set_chatee	: set_chatee,
+        update_avatar : update_avatar
     };
+    
+    
 
   }());
 
