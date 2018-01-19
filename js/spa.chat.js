@@ -10,10 +10,10 @@
   white  : true
 */
 
-/*global $, spa, getComputedStyle */
+/*global $, spa */
 
 spa.chat = (function () {
-
+	'user strict';
   //---------------- モジュールスコープ変数↓ --------------
   var
     configMap = {
@@ -27,6 +27,21 @@ spa.chat = (function () {
           + '</div>'
           + '<div class="spa-chat-closer">x</div>'
           + '<div class="spa-chat-sizer">'
+          	+ '<div class="spa-chat-list">'
+          	  + '<div class="spa-chat-list-box"></div>'
+          	+ '</div>'
+          	+ '<div class="spa-chat-msg">'
+          	  + '<div class="spa-chat-msg-log"></div>'
+          	  + '<div class="spa-chat-msg-in">'
+          	    + '<form class="spa-chat-msg-form">'
+          	    	+ '<input type="text"/>'
+          	    	+ '<input type="submit" style="display:none"/>'
+          	    	+ '<div class="spa-chat-msg-send">'
+          	    		+ '送信'
+          	    	+ '</div>'
+          	    + '</form>'
+          	  + '</div>'
+          	+ '</div>'
             + '<div class="spa-chat-msgs"></div>'
             + '<div class="spa-chat-box">'
             + '<input type="text"/>'
