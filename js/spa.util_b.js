@@ -78,7 +78,7 @@ spa.utilb = (function () {
     return Number(
       getComputedStyle( elem, '').fontSize.match(/\d*\.?\d*/)[0]
     );
-  }  
+  }; 
   // getEmSize↑
   
   //-------------------- ユーティリティメソッド↑ -------------------
