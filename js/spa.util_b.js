@@ -13,7 +13,7 @@
 
 /*global $, spa, getComputedStyle */
 
-spa.utilb = (function () {
+spa.util_b = (function () {
 
   //---------------- モジュールスコープ変数↓ --------------
   var
@@ -52,23 +52,23 @@ spa.utilb = (function () {
   // 任意の数の文字に対応する
   //
   encodeHtml = function ( input_arg_str, exclude_map ) {
-	var
-	  input_str = String( input_arg_str ),
-	  regex, loolup_map;
-	
-	if ( exclude_amp ) {
-	  lookup_map = configMap.encode_noamp_map;
-	  regex = configMap.regex_encode_noamp;
-	}
-	else {
-	  lookup_map = configMap.html_encode_map;
-	  regex = configMap.regex_encode_html;
-	}
-	return input_str.replace(regex,
-	  function ( match, name ) {
-		return lookup_map[ match ] || '';
-	  }
-	);
+		var
+		  input_str = String( input_arg_str ),
+		  regex, loolup_map;
+		
+		if ( exclude_amp ) {
+		  lookup_map = configMap.encode_noamp_map;
+		  regex = configMap.regex_encode_noamp;
+		}
+		else {
+		  lookup_map = configMap.html_encode_map;
+		  regex = configMap.regex_encode_html;
+		}
+		return input_str.replace(regex,
+		  function ( match, name ) {
+			return lookup_map[ match ] || '';
+		  }
+		);
   };
   // encodeHtml↑
 

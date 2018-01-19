@@ -13,7 +13,7 @@
 /*global $, spa */
 
 spa.chat = (function () {
-	'user strict';
+	'use strict';
   //---------------- モジュールスコープ変数↓ --------------
   var
     configMap = {
@@ -454,11 +454,11 @@ spa.chat = (function () {
 
     // $list_box でjQueryグローバルイベントに登録する
     $list_box = jqueryMap.$list_box;
-    $.gevent.subscript( $list_box, 'spa-listchange', onListchange );
-    $.gevent.subscript( $list_box, 'spa-setchate', onSetchatee );
-    $.gevent.subscript( $list_box, 'spa-updatechat', onUpdatechat );
-    $.gevent.subscript( $list_box, 'spa-login', onLogin );
-    $.gevent.subscript( $list_box, 'spa-logout', onLogout );
+    $.gevent.subscribe( $list_box, 'spa-listchange', onListchange );
+    $.gevent.subscribe( $list_box, 'spa-setchate', onSetchatee );
+    $.gevent.subscribe( $list_box, 'spa-updatechat', onUpdatechat );
+    $.gevent.subscribe( $list_box, 'spa-login', onLogin );
+    $.gevent.subscribe( $list_box, 'spa-logout', onLogout );
     
     // ユーザー入力イベントをバインドする
     jqueryMap.$head.bind( 		'utap', onTapToggle );
