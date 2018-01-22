@@ -30,9 +30,9 @@ spa.util_b = (function () {
     },
 
     decodeHtml, encodeHtml, getEmSize;
-  
+
   configMap.encode_noamp_map = $.extend(
-    {}, configMap.html__encode_map 
+    {}, configMap.html__encode_map
   );
   //----------------- モジュールスコープ変数↑ ---------------
 
@@ -43,32 +43,32 @@ spa.util_b = (function () {
   //   unescape-html-entities-in-javascript を参照
   //
   decodeHtml = function ( str ) {
-	return $('<div/>').html(str || '').text();
+    return $('<div/>').html(str || '').text();
   };
   //decodeHtml↑
-  
+
   // encodeHtml↓
   // これはhtmlエンティティのための単一パスエンコーダであり、
   // 任意の数の文字に対応する
   //
   encodeHtml = function ( input_arg_str, exclude_map ) {
-		var
-		  input_str = String( input_arg_str ),
-		  regex, loolup_map;
-		
-		if ( exclude_amp ) {
-		  lookup_map = configMap.encode_noamp_map;
-		  regex = configMap.regex_encode_noamp;
-		}
-		else {
-		  lookup_map = configMap.html_encode_map;
-		  regex = configMap.regex_encode_html;
-		}
-		return input_str.replace(regex,
-		  function ( match, name ) {
-			return lookup_map[ match ] || '';
-		  }
-		);
+        var
+          input_str = String( input_arg_str ),
+          regex, lookup_map;
+
+        if ( exclude_map ) {
+          lookup_map = configMap.encode_noamp_map;
+          regex = configMap.regex_encode_noamp;
+        }
+        else {
+          lookup_map = configMap.html_encode_map;
+          regex = configMap.regex_encode_html;
+        }
+        return input_str.replace(regex,
+          function ( match, name ) {
+            return lookup_map[ match ] || '';
+          }
+        );
   };
   // encodeHtml↑
 
@@ -78,12 +78,12 @@ spa.util_b = (function () {
     return Number(
       getComputedStyle( elem, '').fontSize.match(/\d*\.?\d*/)[0]
     );
-  }; 
+  };
   // getEmSize↑
-  
+
   //-------------------- ユーティリティメソッド↑ -------------------
 
- /* 
+ /*
   //--------------------- DOMメソッド↓ --------------------
   // DOM メソッド /setJqueryMap/↓
   setJqueryMap = function () {
@@ -140,6 +140,6 @@ spa.util_b = (function () {
     encodeHtml : encodeHtml,
     getEmSize   : getEmSize
   };
-  
+
   //------------------- パブリックメソッド↑ ---------------------
 }());
