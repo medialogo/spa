@@ -238,8 +238,11 @@ spa.model = (function () {
 
   chat = (function () {
     var
-      _publish_listchange, _publish_updatechat, _update_list, _leave_chat,
-      get_chatee, join_chat, send_msg, set_chatee, update_avatar,
+      _publish_listchange, _publish_updatechat, 
+      _update_list, _leave_chat,
+      
+      get_chatee, join_chat, send_msg, 
+      set_chatee, update_avatar,
       chatee = null;
 
     // 内部メソッド↓
@@ -274,7 +277,7 @@ spa.model = (function () {
           is_chatee_online = true;	
           chatee = person;
         }
-        makePerson( make_person_map );
+        //makePerson( make_person_map );
       }
       stateMap.people_db.sort( 'name' );
       // チャット相手がオンラインでなくなっている場合は、チャット相手を解除する。

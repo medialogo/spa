@@ -14,26 +14,27 @@
 /*global $, spa, getComputedStyle */
 
 spa.util_b = (function () {
-
+  'use strict';
   //---------------- モジュールスコープ変数↓ --------------
   var
     configMap = {
       regex_encode_html : /[&"'><]/g,
       regex_encode_noamp : /["'><]/g,
-      html__encode_map : {
-        '&' : '&#38:',
-        '"' : '&#34:',
-        "'" : '&#39:',
-        '>' : '&#62:',
-        '<' : '&#60:',
+      html_encode_map : {
+        '&' : '&#38;',
+        '"' : '&#34;',
+        "'" : '&#39;',
+        '>' : '&#62;',
+        '<' : '&#60;',
        }
     },
 
     decodeHtml, encodeHtml, getEmSize;
 
   configMap.encode_noamp_map = $.extend(
-    {}, configMap.html__encode_map
+    {}, configMap.html_encode_map
   );
+  delete configMap.encode_noamp_map['&'];
   //----------------- モジュールスコープ変数↑ ---------------
 
   //------------------- ユーティリティメソッド↓ ------------------
@@ -51,12 +52,12 @@ spa.util_b = (function () {
   // これはhtmlエンティティのための単一パスエンコーダであり、
   // 任意の数の文字に対応する
   //
-  encodeHtml = function ( input_arg_str, exclude_map ) {
+  encodeHtml = function ( input_arg_str, exclude_amp ) {
         var
           input_str = String( input_arg_str ),
           regex, lookup_map;
 
-        if ( exclude_map ) {
+        if ( exclude_amp ) {
           lookup_map = configMap.encode_noamp_map;
           regex = configMap.regex_encode_noamp;
         }
@@ -83,57 +84,7 @@ spa.util_b = (function () {
 
   //-------------------- ユーティリティメソッド↑ -------------------
 
- /*
-  //--------------------- DOMメソッド↓ --------------------
-  // DOM メソッド /setJqueryMap/↓
-  setJqueryMap = function () {
-    var $container = stateMap.$container;
 
-    jqueryMap = { $container : $container };
-  };
-  // DOM メソッド /setJqueryMap/ ↑
-  //---------------------- DOMメソッド↑ ---------------------
-
-  //------------------- イベントハンドラ↓ -------------------
-  // example: onClickButton = ...
-  //-------------------- イベントハンドラ↑ --------------------
-
-
-
-  //------------------- パブリックメソッド↓ -------------------
-  // パブリックメソッド /configModule/ ↓
-  // 目的    : 許可されたキーの構成を調整する
-  // 引数  : 設定可能なキー値ペアのマップ
-  //   * color_name - 使用する色
-  // 設定   :
-  //   * configMap.settable_map 許可されるキーを宣言
-  // 戻り値    : true
-  // 例外発行     : なし
-
-  configModule = function ( input_map ) {
-    spa.util.setConfigMap({
-      input_map    : input_map,
-      settable_map : configMap.settable_map,
-      config_map   : configMap
-    });
-    return true;
-  };
-  // パブリックメソッド /configModule/ ↑
-
-  // パブリックメソッド /initModule/ ↓
-  // 目的    : モジュールを初期化する
-  // 引数  :
-  //  * $container この機能で使用する jQuery 要素
-  // 戻り値    : true
-  // 例外発行     : なし
-  //
-  initModule = function ( $container ) {
-    stateMap.$container = $container;
-    setJqueryMap();
-    return true;
-  };
-  // パブリックメソッド /initModule/ ↑
-*/
   // パブリックメソッドを返す
   return {
     decodeHtml : decodeHtml,

@@ -22,7 +22,7 @@ spa.chat = (function () {
           + '<div class="spa-chat-head">'
             + '<div class="spa-chat-head-toggle">+</div>'
             + '<div class="spa-chat-head-title">'
-              + 'chat'
+              + 'チャット'
             + '</div>'
           + '</div>'
           + '<div class="spa-chat-closer">x</div>'
@@ -224,17 +224,19 @@ spa.chat = (function () {
 
   // チャットメッセージを管理するプライベートDOMメソッド群↓
   scrollChat = function(){
-      var $msg_log = jqueryMap.$msg_log;
-      $msg_log.animate(
-          { scrollTop : $msg_log.prop( 'scrollHeight' ) - $msg_log.height() }, 150
-          );
+    var $msg_log = jqueryMap.$msg_log;
+    $msg_log.animate(
+      { scrollTop : $msg_log.prop( 'scrollHeight' ) 
+        - $msg_log.height()
+      }, 150
+    );
   };
 
   writeChat = function( person_name, text, is_user ){
       var msg_class = is_user ? 'spa-chat-msg-log-me' : 'spa-chat-msg-log-msg';
 
       jqueryMap.$msg_log.append(
-        '<div class="' * msg_class + '">'
+        '<div class="' + msg_class + '">'
         + spa.util_b.encodeHtml(person_name) + ': '
         + spa.util_b.encodeHtml(text) + '</div>'
       );
@@ -243,10 +245,10 @@ spa.chat = (function () {
   };
 
   writeAlert = function ( alert_text) {
-      jqueryMap.$msg_log.append(
-        '<div class="spa-chat-msg-log-alert">'
-              + spa.util_b.encodeHtml(alert_text)
-              + '</div>'
+    jqueryMap.$msg_log.append(
+      '<div class="spa-chat-msg-log-alert">'
+            + spa.util_b.encodeHtml(alert_text)
+            + '</div>'
       );
       scrollChat();
   };
@@ -283,7 +285,7 @@ spa.chat = (function () {
 
   onTapList = function ( event ){
       var $tapped = $( event.elem_target ), chatee_id;
-      if (! chatee_id ) { return false; }
+      if (! $tapped.hasClass('spa-chat-list-name') ) { return false; }
 
       chatee_id = $tapped.attr( 'data-id' );
       if ( ! chatee_id ) { return false; }
@@ -305,7 +307,7 @@ spa.chat = (function () {
           else {
               writeAlert( 'お友達が退室しました' );
           }
-          jqueryMap.$title.text( 'chat' );
+          jqueryMap.$title.text( 'チャット' );
           return false;
       }
 
@@ -316,8 +318,8 @@ spa.chat = (function () {
           .find( '[data-id=' + arg_map.new_chatee.id + ']' )
           .addClass( 'spa-x-select' );
 
-      writeAlert( '現在のチャット相手は ' + arg_map.new_chatee.name + 'さんです' );
-      jqueryMap.$title.text( 'Chat with ' + arg_map.new_chatee.name );
+      writeAlert( 'チャット相手は ' + arg_map.new_chatee.name + ' さんです' );
+      jqueryMap.$title.text( 'チャット中 (' + arg_map.new_chatee.name + ')');
       return true;
   };
 
@@ -348,7 +350,7 @@ spa.chat = (function () {
               + 'To chat alone is the fate of all great souls...<br><br>'
               + 'No one is online'
               + '</div>';
-          claseChat();
+          clearChat();
       }
       jqueryMap.$list_box.html( list_html );
   };
@@ -455,7 +457,7 @@ spa.chat = (function () {
     // $list_box でjQueryグローバルイベントに登録する
     $list_box = jqueryMap.$list_box;
     $.gevent.subscribe( $list_box, 'spa-listchange', onListchange );
-    $.gevent.subscribe( $list_box, 'spa-setchate', onSetchatee );
+    $.gevent.subscribe( $list_box, 'spa-setchatee', onSetchatee );
     $.gevent.subscribe( $list_box, 'spa-updatechat', onUpdatechat );
     $.gevent.subscribe( $list_box, 'spa-login', onLogin );
     $.gevent.subscribe( $list_box, 'spa-logout', onLogout );
