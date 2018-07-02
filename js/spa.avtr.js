@@ -36,7 +36,7 @@ spa.avtr = (function () {
 
     jqueryMap = {},
 
-    GetRandRgb,
+    getRandRgb,
     setJqueryMap,
     updateAvatar,
     onTapNav, 		onHeldstartNav,
@@ -92,115 +92,114 @@ spa.avtr = (function () {
     $target.css({ 'background-color' : getRandRgb()});
     updateAvatar( $target );
   };
-///
-  onTapList = function ( event ){
-      var $tapped = $( event.elem_target ), chatee_id;
-      if (! $tapped.hasClass('spa-chat-list-name') ) { return false; }
 
-      chatee_id = $tapped.attr( 'data-id' );
-      if ( ! chatee_id ) { return false; }
+  onHeldstartNav = function ( event ) {
+      var offset_target_map, offset_nav_map,
+          $target = $( event.elem_target ).closest('.spa-avtr-box');
+      if ( $target.length === 0 ) { return false; }
 
-      configMap.chat_model.set_chatee( chatee_id );
-      return false;
+      stateMap.$drag_target = $target;
+      offset_target_map = $target.offset();
+      offset_nav_map = jqueryMap.$container.offset();
+
+      offset_target_map.top -= offset_nav_map.top;
+      offset_target_map.left -= offset_nav_map.left;
+
+      stateMap.drag_map	= offset_target_map;
+      stateMap.drag_bg_color = $target.css('background-color');
+
+      $target
+          .addClass('spa-x-is-drag')
+          .css('background-color','');
+
   };
+
+  onHeldmoveNav = function ( event ){
+      var drag_map = stateMap.drag_map;
+      if (!drag_map){ return false; }
+
+      drag_map.top += event.px_delta_y;
+      drag_map.left += event.px_delta_x;
+
+      stateMap.$drag_target.css({
+          top : drag_map.top, left : drag_map.left
+      });
+  };
+
+  onHeldendNav =function ( event ){
+      var $drag_target = stateMap.$drag_target;
+      if ( !$drag_target ){return faflse;}
+
+      $drag_target
+          .removeClass('spa-x-is-drag')
+          .css('background-color',stateMap.drag_bg_color);
+
+      stateMap.drag_bg_color = undefined;
+      stateMap.$drag_target = null;
+      stateMap.drag_map = null;
+      updateAvatar ($drag_target);
+
+  };
+
 
   onSetchatee = function (event, arg_map) {
       var
+              $nav = $(this),
           new_chatee = arg_map.new_chatee,
           old_chatee = arg_map.ole_chatee;
 
-      jqueryMap.$input.focus();
-      if ( ! new_chatee ) {
-          if ( old_chatee ) {
-              writeAlert ( old_chatee.name + 'さんが退室しました' );
-          }
-          else {
-              writeAlert( 'お友達が退室しました' );
-          }
-          jqueryMap.$title.text( 'チャット' );
-          return false;
+      // これを使ってナビゲーション領域のユーザーのアバターを強調表示する
+      // new_chatee.name, old_chatee.name などを参照
+
+      // old_chatee アバターから強調表示を削除する
+      if ( old_chatee ) {
+          $nav
+              .find('.spa-avtr-box[data-id=' + old_chatee.cid + ']' )
+              .removeClass( 'spa-x-is-chatee');
       }
-
-      jqueryMap.$list_box
-          .find( 'spa-chat-list-name' )
-          .removeClass( 'spa-x-select' )
-          .end()
-          .find( '[data-id=' + arg_map.new_chatee.id + ']' )
-          .addClass( 'spa-x-select' );
-
-      writeAlert( 'チャット相手は ' + arg_map.new_chatee.name + ' さんです' );
-      jqueryMap.$title.text( 'チャット中 (' + arg_map.new_chatee.name + ')');
-      return true;
+      // new_chatee アバターに強調表示を追加する
+      if ( new_chatee ) {
+          $nav
+            .find('.spa-avtr-box[data-id=' + new_chatee.cid + ']' )
+            .addClass( 'spa-x-is-chatee');
+      }
   };
 
   onListchange = function ( event ) {
       var
-          list_html = String(),
-          people_db = configMap.people_model.get_db(),
-          chatee = configMap.chat_model.get_chatee();
+            $nav	= $(this),
+        people_db = configMap.people_model.get_db(),
+        user	=	configMap.people_model.get_user(),
+        chatee = configMap.chat_model.get_chatee() || {},
+        $box;
+
+      $nav.empty();
+      //ユーザーがログアウトしていたら描画しない
+      if ( user.get_is_anon()) { return false; }
 
       people_db().each( function ( person, idx ) {
-          var select_class = '';
+          var class_list;
+          if ( person.get_is_anon()) { return true; }
+          class_list = [ 'spa-avtr-box' ];
 
-          if ( person.get_is_anon() || person.get_is_user()) { return true; }
-
-          if ( chatee && chatee.id === person.id ) {
-              select_class = 'spa-x-select';
+          if ( person.id === chatee.id) {
+              class_list.push( 'spa-x-is-user' );
           }
 
-          list_html
-              += '<div class="spa-chat-list-name'
-              + select_class + '" data-id="' + person.id + '">'
-              + spa.util_b.encodeHtml( person.name ) + '</div>';
+          $box = $('<div/>')
+            .addClass( class_list.join(' '))
+            .css( person.css_map )
+            .attr( 'data-id', String( person.id ))
+            .prop( 'title', spa.util_b.encodeHtml( person.name ))
+            .text( person.name )
+            .appendTo( $nav );
       });
 
-      if ( ! list_html ) {
-          list_html = String()
-              + '<div class="spa-chat-list-note">'
-              + 'To chat alone is the fate of all great souls...<br><br>'
-              + 'No one is online'
-              + '</div>';
-          clearChat();
-      }
-      jqueryMap.$list_box.html( list_html );
-  };
-
-  onUpdatechat = function ( event, msg_map ) {
-      var
-          is_user,
-          sender_id = msg_map.sender_id,
-          msg_text = msg_map.msg_text,
-          chatee = configMap.chat_model.get_chatee() || {},
-          sender = configMap.people_model.get_by_cid( sender_id );
-
-      if ( ! sender ) {
-          writeAlert( msg_text );
-          return false;
-      }
-
-      is_user = sender.get_is_user();
-
-      if ( ! ( is_user || sender_id === chatee.id )) {
-          configMap.chat_model.set_chatee( sender_id );
-      }
-
-      writeChat( sender.name, msg_text, is_user );
-
-      if ( is_user ){
-          jqueryMap.$input.val('');
-          jqueryMap.$input.focus();
-      }
   };
 
 
-  onLogin = function ( event, login_user ) {
-      configMap.set_chat_anchor( 'opened' );
-  };
-
-  onLogout = function ( event, logout_user ) {
-      configMap.set_chat_anchor( 'closed' );
-      jqueryMap.$title.text( 'chat' );
-      clearChat();
+  onLogout = function () {
+      jqueryMap.$container.empty();
   };
 
   //-------------------- イベントハンドラ↑ --------------------
@@ -208,23 +207,12 @@ spa.avtr = (function () {
 
   //------------------- パブリックメソッド↓ -------------------
  // パブリックメソッド /configModule/↓
-  // 用例 : spa.chat.configModule({ slider_open_em : 18 })
-  // 目的 : 初期化前にモジュールを構成する
-  // 引数 :
-  //   * set_chat_anchor - オープンまたはクローズ状態を示すように
-  //     URIアンカーを変更するコールバック。このコールバックは要求された状態を
-  //     満たせない場合にはfalseを返さなければならない
-  //   * chat_model - インスタントメッセージングと
-  //     やり取りするメソッドを提供するチャットモデルオブジェクト。
-  //   * people_model - モデルが保持する人々の
-  //     リストを管理するメソッドを提供するピープルモデルオブジェクト。
-  //   * slider_*構成 - すべてオプションのスカラー。
-  //     完全なリストは mapConfig.settable_map を参照。
-  //     用例 : slider_open_em はオープン時の高さ(em単位)。
+  // 用例 : spa.avtr.configModule({...})
+  // 目的 : 初期化前にモジュール(ユーザーセッション中に変更されるはずのない値)を構成する
   // 動作
-  //   指定された引数で内部構成データ構造(configMap)を更新する。
+  //   内部構成データ構造(configMap)を指定の引数で更新する。
   //   その他の動作は行わない。
-  // 戻り値   : true
+  // 戻り値   : なし
   // 例外発行  : 受け入れられない引数や、欠如した引数の場合
   //          JavaScriptエラーオブジェクトとスタックトレースを投げる
 
@@ -239,110 +227,37 @@ spa.avtr = (function () {
   // パブリックメソッド /configModule/ ↑
 
   // パブリックメソッド /initModule/ ↓
-  // 用例 : spa.chat.initModule ( $('#div_id') );
-  // 目的    : ユーザーに機能を提供するようにチャットに指示する
-  // 引数  :
-  //  * $append_target (例: $('#div_id') );
-  //  1つのDOMコンテナを表すjQueryコレクション
-  // 動作 :
-  //  指定されたコンテナにチャットスライダーを付加し、HTMLコンテンツで埋める
-  //  そして、要素、イベント、ハンドラを初期化し、ユーザーにチャットルームインターフェイスを提供する。
-  // 戻り値    : 成功時 true, 失敗時 false
+  // 用例 : spa.avtr.initModule ( $container );
+  // 目的    : 機能を提供するようにチャットに指示する
+  // 引数  : $container - 使用するコンテナ
+  // 動作 : チャットユーザーにアバターインターフェースを提供する。
+  // 戻り値    : なし
   // 例外発行     : なし
   //
-  initModule = function ( $append_target ) {
-      var $list_box;
+  initModule = function ( $container ) {
+    setJqueryMap( $container );
 
-      // チャットスライダーHTMLとjQueryキャッシュをロードする
-    stateMap.$append_target = $append_target;
-    $append_target.append( configMap.main_html );
-    setJqueryMap();
-    setPxSizes();
+    // モデルグローバルイベントをバインドする
+    $.gevent.subscribe( $container, 'spa-setchatee', onSetchatee );
+    $.gevent.subscribe( $container, 'spa-listchange', onListchange );
+    $.gevent.subscribe( $container, 'spa-logout', onLogout );
 
-    // チャットスライダーをデフォルトのタイトルと状態で初期化する
-    jqueryMap.$toggle.prop( 'title', configMap.slider_closed_title );
-//    jqueryMap.$head.click( onClickToggle );
-    stateMap.position_type = 'closed';
+    // 処理をバインドする
+    $container
+        .bind('utap', onTapNav )
+        .bind('uheldstart', onHeldstartNav )
+        .bind('uheldmove', onHeldmoveNav )
+        .bind('uheldend', onHeldendNav );
 
-    // $list_box でjQueryグローバルイベントに登録する
-    $list_box = jqueryMap.$list_box;
-    $.gevent.subscribe( $list_box, 'spa-listchange', onListchange );
-    $.gevent.subscribe( $list_box, 'spa-setchatee', onSetchatee );
-    $.gevent.subscribe( $list_box, 'spa-updatechat', onUpdatechat );
-    $.gevent.subscribe( $list_box, 'spa-login', onLogin );
-    $.gevent.subscribe( $list_box, 'spa-logout', onLogout );
-
-    // ユーザー入力イベントをバインドする
-    jqueryMap.$head.bind( 		'utap', onTapToggle );
-    jqueryMap.$list_box.bind( 'utap', onTapList );
-    jqueryMap.$send.bind( 		'utap', onSubmitMsg );
-    jqueryMap.$form.bind( 	'submit', onSubmitMsg );
-
-//    return true;
+    return true;
   };
   // パブリックメソッド /initModule/ ↑
 
 
-  // パブリックメソッド /removeSlider/ ↓
-  // 目的
-  //  * DOM要素 chatSlider を削除する
-  //  * 初期状態に戻す
-  //  * コールバックや他のデータへのポインタを削除する
-  // 引数  : なし
-  // 戻り値    : true
-  // 例外発行  : なし
-  //
-  removeSlider = function () {
-    // 初期化と状態を解除する
-    // DOMコンテナを削除する。イベントのバインディングも削除する。
-    if ( jqueryMap.$slider ) {
-        jqueryMap.$slider.remove();
-        jqueryMap = {};
-    }
-    stateMap.$append_target = null;
-    stateMap.position_type = 'closed';
-
-    // 主な構成を解除する
-    configMap.chat_model = null;
-    configMap.people_model = null;
-    configMap.set_chat_anchor = null;
-    return true;
-  };
-
-  // パブリックメソッド /removeSlider/ ↑
-
-  // パブリックメソッド /handleResize/ ↓
-  // 目的
-  //  ウィンドウリサイズイベントに対し、必要に応じてこのモジュールが提供する表示を調整する
-  // 動作
-  //  ウィンドウの高さや幅が所定の閾値を下回ったら、
-  //  縮小したウィンドウサイズに合わせてチャットスライダーのサイズを変更する
-  // 戻り値    : ブール値
-  //   * false - リサイズを考慮していない
-  //   * true - リサイズを考慮した
-  // 例外発行  : なし
-  //
-  handleResize = function () {
-    // スライダーコンテントがなければ何もしない
-    if ( ! jqueryMap.$slider ) {return false;}
-
-    setPxSizes();
-    if ( stateMap.position_type === 'opened') {
-      jqueryMap.$slider.css({ height : stateMap.slider_opened_px });
-    }
-
-    return true;
-  };
-  // パブリックメソッド /handleResize/ ↑
-
-
   // パブリックメソッドを返す
   return {
-    setSliderPosition : setSliderPosition,
     configModule : configModule,
     initModule   : initModule,
-    removeSlider : removeSlider,
-    handleResize : handleResize
   };
 
 

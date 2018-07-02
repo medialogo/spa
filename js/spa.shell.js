@@ -22,8 +22,8 @@ spa.shell =(function () {
     main_html : String()
       + '<div class="spa-shell-head">'
         + '<div class="spa-shell-head-logo">'
-        	+ '<h1>SPA</h1>'
-        	+ '<p>javascript end to end</p>'
+            + '<h1>SPA</h1>'
+            + '<p>javascript end to end</p>'
         + '</div>'
         + '<div class="spa-shell-head-acct"></div>'
       + '</div>'
@@ -42,7 +42,7 @@ spa.shell =(function () {
   jqueryMap = {},
 
   copyAnchorMap, setJqueryMap,
-  changeAnchorPart, 
+  changeAnchorPart,
   onResize, onHashchange,
   onTapAcct, onLogin, onLogout,
   setChatAnchor, initModule;
@@ -60,11 +60,11 @@ spa.shell =(function () {
   //DOMメソッド/setJqueryMap/開始 ------------
   setJqueryMap = function () {
     var $container = stateMap.$container;
-    
+
     jqueryMap = {
-    	$container  : $container,
-    	$acct				: $container.find('.spa-shell-head-acct'),
-    	$nav				: $container.find('.spa-shell-main-nav')
+        $container  : $container,
+        $acct				: $container.find('.spa-shell-head-acct'),
+        $nav				: $container.find('.spa-shell-main-nav')
     };
   };
   //DOMメソッド/setJqueryMap/終了 ------------
@@ -210,28 +210,28 @@ spa.shell =(function () {
     return true;
   };
   // イベントハンドラ/onResize/終了
-  
+
   // イベントハンドラ/onTapAcct/開始
   onTapAcct = function ( event ) {
-  	var acct_text, user_name, user = spa.model.people.get_user();
-  	if ( user.get_is_anon() ) {
-  		user_name = prompt( '名前を入力してください' );
-  		spa.model.people.login( user_name );
-  		jqueryMap.$acct.text('... ログインしています ...');
-  	} else {
-  		spa.model.people.logout();
-  	}
-  	return false;
+      var acct_text, user_name, user = spa.model.people.get_user();
+      if ( user.get_is_anon() ) {
+          user_name = prompt( '名前を入力してください' );
+          spa.model.people.login( user_name );
+          jqueryMap.$acct.text('... ログインしています ...');
+      } else {
+          spa.model.people.logout();
+      }
+      return false;
   };
 
   onLogin = function ( event, login_user ) {
-  	jqueryMap.$acct.text( login_user.name );
+      jqueryMap.$acct.text( login_user.name );
   };
-  
+
   onLogout = function ( event, logout_user ) {
-  	jqueryMap.$acct.text( 'ログアウトしました' );
+      jqueryMap.$acct.text( 'ログアウトしました' );
     setTimeout( function () {
-    	jqueryMap.$acct.text( 'クリックしてログイン' );
+        jqueryMap.$acct.text( 'クリックしてログイン' );
     },1000);
   };
 
@@ -288,13 +288,21 @@ spa.shell =(function () {
     });
     spa.chat.initModule( jqueryMap.$container );
 
+
     $.gevent.subscribe( $container, 'spa-login', onLogin );
     $.gevent.subscribe( $container, 'spa-logout', onLogout );
-    
+
     jqueryMap.$acct
-    	.text( 'クリックしてログイン' )
-    	.bind( 'utap', onTapAcct );
-    
+        .text( 'クリックしてログイン' )
+        .bind( 'utap', onTapAcct );
+
+    spa.avtr.configModule({
+        chat_model	: spa.model.chat,
+        people_model : spa.model.people
+    });
+    spa.avtr.initModule( jqueryMap.$nav );
+
+
     // URIアンカー変更イベントを処理する。
     // これはすべての機能モジュールを設定して初期化した後に行う
     // そうしないと、トリガーイベントを処理できる状態になっていない。
