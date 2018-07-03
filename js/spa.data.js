@@ -21,67 +21,37 @@ spa.data = (function () {
     makeSio, getSio, initModule;
   //----------------- モジュールスコープ変数↑ ---------------
 
-  //------------------- ユーティリティメソッド↓ ------------------
-  // example : getTrimmedString
-  //-------------------- ユーティリティメソッド↑ -------------------
+  makeSio = function () {
+      var socket = io.connect( '/chat' );
 
-  //--------------------- DOMメソッド↓ --------------------
-  // DOM メソッド /setJqueryMap/↓
-  setJqueryMap = function () {
-    var $container = stateMap.$container;
-
-    jqueryMap = { $container : $container };
+      return {
+          emit : function( event_name, data ){
+              socket.emit( event_name, function() {
+                  callback( arguments );
+              });
+          }
+      };
   };
-  // DOM メソッド /setJqueryMap/ ↑
-  //---------------------- DOMメソッド↑ ---------------------
 
-  //------------------- イベントハンドラ↓ -------------------
-  // example: onClickButton = ...
-  //-------------------- イベントハンドラ↑ --------------------
-
-
-
-  //------------------- パブリックメソッド↓ -------------------
-  // パブリックメソッド /configModule/ ↓
-  // 目的    : 許可されたキーの構成を調整する
-  // 引数  : 設定可能なキー値ペアのマップ
-  //   * color_name - 使用する色
-  // 設定   :
-  //   * configMap.settable_map 許可されるキーを宣言
-  // 戻り値    : true
-  // 例外発行     : なし
-
-  configModule = function ( input_map ) {
-    spa.util.setConfigMap({
-      input_map    : input_map,
-      settable_map : configMap.settable_map,
-      config_map   : configMap
-    });
-    return true;
+  getSio = function (){
+      if ( ! stateMap.sio ) { stateMap.sio = makeSio(); }
+      return stateMap.sio;
   };
-  // パブリックメソッド /configModule/ ↑
 
   // パブリックメソッド /initModule/ ↓
   // 目的    : モジュールを初期化する
   // 引数  :
-  //  * $container この機能で使用する jQuery 要素
   // 戻り値    : true
   // 例外発行     : なし
   //
-  initModule = function ( $container ) {
-    stateMap.$container = $container;
-    setJqueryMap();
-    return true;
-  };
+  initModule = function () {};
   // パブリックメソッド /initModule/ ↑
 
   // パブリックメソッドを返す
   return {
-    configModule : configModule,
+    getSio : getSio,
     initModule   : initModule
   };
-  */
-    return {};
 
   //------------------- パブリックメソッド↑ ---------------------
 }());
