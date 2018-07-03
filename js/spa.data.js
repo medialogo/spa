@@ -14,17 +14,11 @@
 /*global $, spa */
 
 spa.data = (function () {
-/*
+    'use strict';
   //---------------- モジュールスコープ変数↓ --------------
   var
-    configMap = {
-      settable_map : { color_name: true },
-      color_name   : 'blue'
-    },
-    stateMap  = { $container : null },
-    jqueryMap = {},
-
-    setJqueryMap, configModule, initModule;
+    stateMap  = { sio : null },
+    makeSio, getSio, initModule;
   //----------------- モジュールスコープ変数↑ ---------------
 
   //------------------- ユーティリティメソッド↓ ------------------
@@ -87,7 +81,7 @@ spa.data = (function () {
     initModule   : initModule
   };
   */
-	return {};
-  
+    return {};
+
   //------------------- パブリックメソッド↑ ---------------------
 }());
