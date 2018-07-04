@@ -30,7 +30,7 @@ spa.model = (function () {
       is_connected : false, // ユーザーが現在チャットルームにいるかどうか
     },
 
-    isFakeData = true,
+    isFakeData = false, // true,
 
     personProto, makeCid, clearPeopleDb, completeLogin,
     makePerson, removePerson, people, chat, initModule;
@@ -176,7 +176,7 @@ spa.model = (function () {
 
     logout = function () {
       var user = stateMap.user;
-      
+
       //チャットルームから退出
       chat._leave();
       stateMap.user = stateMap.anon_user;
@@ -238,10 +238,10 @@ spa.model = (function () {
 
   chat = (function () {
     var
-      _publish_listchange, _publish_updatechat, 
+      _publish_listchange, _publish_updatechat,
       _update_list, _leave_chat,
-      
-      get_chatee, join_chat, send_msg, 
+
+      get_chatee, join_chat, send_msg,
       set_chatee, update_avatar,
       chatee = null;
 
@@ -272,9 +272,9 @@ spa.model = (function () {
           name		: person_map.name
         };
         person = makePerson( make_person_map );
-        
+
         if ( chatee && chatee.id === make_person_map.id ) {
-          is_chatee_online = true;	
+          is_chatee_online = true;
           chatee = person;
         }
         //makePerson( make_person_map );
@@ -289,17 +289,17 @@ spa.model = (function () {
         _update_list( arg_list);
         $.gevent.publish( 'spa-listchange', [arg_list] );
     };
-    
+
     _publish_updatechat = function( arg_list ){
-    	var msg_map = arg_list[0];
-    	
-    	if (! chatee ) { set_chatee( msg_map.sender_id ); }
-    	else if ( msg_map.sender_id !== stateMap.user.id 
-    				 && msg_map.sender_id !== chatee.id ) {
-    		set_chatee( msg_map.sender_id );
-    	}
-    	$.gevent.publish( 'spa-updatechat', [ msg_map ] );
-    	
+        var msg_map = arg_list[0];
+
+        if (! chatee ) { set_chatee( msg_map.sender_id ); }
+        else if ( msg_map.sender_id !== stateMap.user.id
+                     && msg_map.sender_id !== chatee.id ) {
+            set_chatee( msg_map.sender_id );
+        }
+        $.gevent.publish( 'spa-updatechat', [ msg_map ] );
+
     };
     // 内部メソッド↑
 
@@ -310,7 +310,7 @@ spa.model = (function () {
     };
 
     get_chatee = function() { return chatee; };
-    
+
     join_chat = function() {
         var  sio;
 
@@ -327,47 +327,47 @@ spa.model = (function () {
         stateMap.is_connected = true;
         return true;
     };
-    
+
     send_msg = function( msg_text ) {
-    	var msg_map,
-    			sio = isFakeData ? spa.fake.mockSio : spa.data.getSio();
-    	
-    	if ( ! sio ) { return false; }
-    	if ( ! ( stateMap.user && chatee )) { return false; }
-    	
-    	msg_map = {
-    		dest_id		: chatee.id,
-    		dest_name	: chatee.name,
-    		sender_id	: stateMap.user.id,
-    		msg_text	: msg_text
-    	};
-    	
-    	// updatechatを発行したので、送信メッセージを表示できる
-    	_publish_updatechat( [msg_map] );
-    	sio.emit( 'updatechat', msg_map );
-    	return true;
+        var msg_map,
+                sio = isFakeData ? spa.fake.mockSio : spa.data.getSio();
+
+        if ( ! sio ) { return false; }
+        if ( ! ( stateMap.user && chatee )) { return false; }
+
+        msg_map = {
+            dest_id		: chatee.id,
+            dest_name	: chatee.name,
+            sender_id	: stateMap.user.id,
+            msg_text	: msg_text
+        };
+
+        // updatechatを発行したので、送信メッセージを表示できる
+        _publish_updatechat( [msg_map] );
+        sio.emit( 'updatechat', msg_map );
+        return true;
     };
 
     set_chatee = function ( person_id ){
-    	var new_chatee;
-    	new_chatee = stateMap.people_cid_map[ person_id ];
-    	if ( new_chatee ) {
-    		if ( chatee && chatee.id === new_chatee.id ){
-    			// チャット相手が現在のオブジェクトと同じ
-    			return false;
-    		}
-    	}
-    	else {
-    		new_chatee = null;
-    	}
-    	
-    	$.gevent.publish( 'spa-setchatee',
-    			{ old_chatee : chatee,  new_chatee : new_chatee }
-    	);
-    	chatee = new_chatee;
-    	return true;
+        var new_chatee;
+        new_chatee = stateMap.people_cid_map[ person_id ];
+        if ( new_chatee ) {
+            if ( chatee && chatee.id === new_chatee.id ){
+                // チャット相手が現在のオブジェクトと同じ
+                return false;
+            }
+        }
+        else {
+            new_chatee = null;
+        }
+
+        $.gevent.publish( 'spa-setchatee',
+                { old_chatee : chatee,  new_chatee : new_chatee }
+        );
+        chatee = new_chatee;
+        return true;
     };
-    
+
     // avatar_update_map は以下の形式を持つべき。
     // { person_id : <string>, css_map : {
     //   top : <int>, left : <int>,
@@ -375,12 +375,12 @@ spa.model = (function () {
     //  }};
     //
     update_avatar = function ( avatar_update_map ){
-    	var sio = isFakeData ? spa.fake.mockSio : spa.data.getSid();
-    	if ( sio ) {
-    		sio.emit( 'updateavatar', avatar_update_map );
-    	}
+        var sio = isFakeData ? spa.fake.mockSio : spa.data.getSid();
+        if ( sio ) {
+            sio.emit( 'updateavatar', avatar_update_map );
+        }
     };
-    
+
     return {
         _leave 			: _leave_chat,
         get_chatee 	: get_chatee,
@@ -389,8 +389,8 @@ spa.model = (function () {
         set_chatee	: set_chatee,
         update_avatar : update_avatar
     };
-    
-    
+
+
 
   }());
 
